@@ -1,0 +1,39 @@
+version: "3.6"
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+#    volumes:
+#      - ./postgres:/var/lib/postgresql/data
+  server:
+    build: server
+    container_name: server
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    volumes:
+      - ./server/src:/server/src
+      - ./server/prisma:/server/prisma
+    env_file:
+      - .env
+#  client:
+#    build: client
+#    container_name: client
+#    restart: always
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - server
+#    volumes:
+#      - ./client:/client
+#    environment:
+#      VUE_APP_API_URL: http://server:3000/graphql
+#    env_file:
+#      - .env
