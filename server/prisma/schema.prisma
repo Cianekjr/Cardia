@@ -3,6 +3,11 @@ generator client {
   binaryTargets = ["native", "debian-openssl-1.1.x"]
 }
 
+generator dbml {
+  provider = "prisma-dbml-generator"
+  output   = "./dbml"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -30,7 +35,7 @@ model Model {
   bodyType       String
   make           String
   model          String
-  generation     String
+  generation     String?
   engineCapacity Float /// [dm^3]=[liters]
   enginePower    Int /// [HP]
   engineType     EngineType
@@ -63,6 +68,7 @@ model Inspection {
   // Environmental protection issues
   // Additional conditions
 
+  result Result
 }
 
 enum Role {
@@ -75,4 +81,9 @@ enum EngineType {
   PETROL
   ELECTRIC
   HYBRID
+}
+
+enum Result {
+  POSITIVE
+  NEGATIVE
 }

@@ -1,8 +1,10 @@
 import { useQuery, useResult } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 export default function () {
+  const router = useRouter()
+
   const { result, error } = useQuery(gql`
     query user {
       user {
@@ -15,9 +17,12 @@ export default function () {
       }
     },
   `)
-  // router.push({ name: 'Login' })
 
   const user = useResult(result, null, data => data.user)
+
+  if (!user || error) {
+    router.push({ name: 'Login' })
+  }
 
   return { user }
 }
