@@ -13,20 +13,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  email     String   @unique
-  password  String
-  role      Role
-  station   Station?
-}
-
 model Station {
   id          Int          @id @default(autoincrement())
-  name        String       @unique
-  user        User         @relation(fields: [userId], references: [id])
-  userId      Int
+  createdAt   DateTime     @default(now())
+  email       String       @unique
+  name        String
+  password    String
   inspections Inspection[]
 }
 
@@ -39,7 +31,7 @@ model Model {
   engineCapacity Float /// [dm^3]=[liters]
   enginePower    Int /// [HP]
   engineType     EngineType
-  Inspection     Inspection[]
+  inspections    Inspection[]
 }
 
 model Inspection {
@@ -71,9 +63,8 @@ model Inspection {
   result Result
 }
 
-enum Role {
-  DIAGNOSTICIAN
-  ANALYST
+model Action {
+  id Int @id @default(autoincrement())
 }
 
 enum EngineType {

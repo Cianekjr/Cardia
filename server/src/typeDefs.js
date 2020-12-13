@@ -3,59 +3,73 @@ import { gql } from "apollo-server-express";
 const typeDefs = gql`
 	scalar DateTime
 
-	type Inspection {
-		createdAt: DateTime!
-		id: Int!
-		station: Station!
-		stationId: Int!
-		updatedAt: DateTime!
-	}
-
 	type Station {
 		id: Int!
-		inspections: [Inspection!]!
-		name: String!
-		user: User!
-		userId: Int!
-	}
-
-	type User {
 		createdAt: DateTime!
 		email: String!
-		id: Int!
+		name: String!
 		password: String!
-		role: Role!
-		station: Station
-	}
-
-	input SignupUserInput {
-		email: String!
-		password: String!
-		role: Role!
-	}
-
-	input LoginUserInput {
-		email: String!
-		password: String!
+		inspections: [Inspection!]
 	}
   
-  input CreateStationInput {
-		name: String!
+  type Model {
+    id: Int!
+    bodyType: String!
+    make: String!
+    model: String!
+    generation: String
+    engineCapacity: Float!
+    enginePower: Int!
+    engineType: EngineType!
+    inspections: [Inspection!]
   }
+  
+	type Inspection {
+		id: Int!
+		createdAt: DateTime!
+		updatedAt: DateTime!
+		station: Station!
+		stationId: Int!
 
-	enum Role {
-		ANALYST
-		DIAGNOSTICIAN
+		model: Model!
+		modelId: Int!
+		mileage: Int!
+		firstRegistrationDate: DateTime!
+		age: Int
+    
+    result: Result!
+	}
+
+	input SignUpInput {
+		email: String!
+		password: String!
+    name: String!
+	}
+
+	input SignInInput {
+		email: String!
+		password: String!
 	}
 
 	type Query {
-		user: User
+		getCurrentStation: Station
   }
 
 	type Mutation {
-		signupUser(input: SignupUserInput!): User
-		createStation(input: CreateStationInput!): Station
-		loginUser(input: LoginUserInput!): User
+		signUp(input: SignUpInput!): Station!
+		signIn(input: SignInInput!): Station!
+	}
+
+	enum EngineType {
+		DIESEL
+		PETROL
+		ELECTRIC
+		HYBRID
+	}
+
+	enum Result {
+		POSITIVE
+		NEGATIVE
 	}
 `
 

@@ -8,19 +8,25 @@ const routes: Array<RouteRecordRaw> = [
     path: '/',
     name: 'Home',
     component: Home,
-    meta: { allowedRoles: ['DIAGNOSTICIAN', 'ANALYST'] }
+    meta: { notLoggedAllowed: true }
   },
   {
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue'),
-    meta: { allowedRoles: ['NOTLOGGED'] }
+    meta: { notLoggedAllowed: true }
   },
   {
     path: '/register',
     name: 'Register',
     component: () => import('../views/Register.vue'),
-    meta: { allowedRoles: ['NOTLOGGED'] }
+    meta: { notLoggedAllowed: true }
+  },
+  {
+    path: '/inspections/new',
+    name: 'NewInspection',
+    component: () => import('../views/NewInspection.vue'),
+    meta: { notLoggedAllowed: false }
   }
 ]
 
@@ -31,16 +37,14 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const isNeedRefetch = from.name === 'Login' || from.name === 'Register'
+
   const { data } = await apolloClient.query({
     query: gql`
-      query user {
-        user {
+      query getCurrentStation {
+        getCurrentStation {
           id
           email
-          role
-          station {
-            id
-          }
+          name
         }
       },
     `,
@@ -48,13 +52,11 @@ router.beforeEach(async (to, from, next) => {
     fetchPolicy: isNeedRefetch ? 'network-only' : 'cache-first'
   })
 
-  const user = data?.user
+  const stationId = data?.getCurrentStation?.id
 
-  const role = user?.role || 'NOTLOGGED'
-
-  if (!to.meta.allowedRoles.includes(role) && !user) {
+  if (!to.meta.notLoggedAllowed && !stationId) {
     next({ name: 'Login' })
-  } else if (!to.meta.allowedRoles.includes(role) && user) {
+  } else if (stationId && (to.name === 'Login' || to.name === 'Register')) {
     next({ name: 'Home' })
   } else {
     next()

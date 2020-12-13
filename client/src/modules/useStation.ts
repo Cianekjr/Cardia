@@ -6,23 +6,20 @@ export default function () {
   const router = useRouter()
 
   const { result, error } = useQuery(gql`
-    query user {
-      user {
+    query getCurrentStation {
+      getCurrentStation {
         id
         email
-        role
-        station {
-          id
-        }
+        name
       }
     },
   `)
 
-  const user = useResult(result, null, data => data.user)
+  const station = useResult(result, null, data => data.getCurrentStation)
 
-  if (!user || error) {
+  if (!station || error.value) {
     router.push({ name: 'Login' })
   }
 
-  return { user }
+  return { station }
 }

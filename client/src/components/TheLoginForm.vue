@@ -63,25 +63,22 @@ export default ({
     const { value: email, errorMessage: emailError } = useField('email', yup.string().required().email())
     const { value: password, errorMessage: passwordError } = useField('password', yup.string().required().min(6))
 
-    const { mutate: loginUser, loading } = useMutation(gql`
-      mutation loginUser ($input: LoginUserInput!) {
-        loginUser (input: $input) {
+    const { mutate: signIn, loading } = useMutation(gql`
+      mutation signIn ($input: SignInInput!) {
+        signIn (input: $input) {
           id
           email
-          role
-          station {
-            id
-          }
+          name
         }
-      },
+      }
     `)
 
     const onSubmit = handleSubmit(async (values) => {
       try {
-        const user = await loginUser({ input: values })
-        const name = user?.data?.loginUser?.station?.name || user?.data?.loginUser?.email
+        const user = await signIn({ input: values })
+        const name = user?.data?.signIn?.name
         await push({ name: 'Home' })
-        toast.add({ severity: 'success', summary: `Witaj ${name}`, life: 4000 })
+        toast.add({ severity: 'success', summary: 'Witaj!', detail: name, life: 4000 })
       } catch (e) {
         if (e.message === 'Email or password is not correct') {
           messageText.value = 'Email i/lub hasło nieprawidłowe'

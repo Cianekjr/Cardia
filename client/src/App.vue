@@ -8,15 +8,15 @@
 
 <script lang="ts">
 import TheLayout from '@/components/TheLayout.vue'
-import useUser from '@/modules/useUser'
+import useStation from '@/modules/useStation'
 
 export default ({
   components: {
     TheLayout
   },
   setup () {
-    const user = useUser()
-    console.log('App', user)
+    const station = useStation()
+    console.log('App', station)
   }
 })
 
