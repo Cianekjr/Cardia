@@ -12,12 +12,14 @@
     "prisma:up": "prisma migrate --experimental up --auto-approve --create-db",
     "prisma:generate": "prisma generate",
     "prisma:format": "prisma format",
+    "prisma:studio": "prisma studio --experimental",
     "generate": "npm run prisma:format && npm run prisma:save && npm run prisma:up && npm run prisma:generate"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@prisma/cli": "^2.12.1",
+    "faker": "^5.1.0",
     "nodemon": "^2.0.6",
     "prisma-dbml-generator": "^0.4.0"
   },

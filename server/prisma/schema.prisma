@@ -22,16 +22,46 @@ model Station {
   inspections Inspection[]
 }
 
-model Model {
+model Car {
   id             Int          @id @default(autoincrement())
-  bodyType       String
-  make           String
-  model          String
-  generation     String?
-  engineCapacity Float /// [dm^3]=[liters]
+  bodyType       BodyType     @relation(fields: [bodyTypeId], references: [id])
+  bodyTypeId     Int
+  model          Model        @relation(fields: [modelId], references: [id])
+  modelId        Int
+  engineCapacity Int /// [cm^3]
   enginePower    Int /// [HP]
-  engineType     EngineType
+  engineType     EngineType   @relation(fields: [engineTypeId], references: [id])
+  engineTypeId   Int
   inspections    Inspection[]
+}
+
+model BodyType {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  Car  Car[]
+}
+
+model EngineType {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  Car  Car[]
+}
+
+model Make {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  Model Model[]
+}
+
+model Model {
+  id     Int    @id @default(autoincrement())
+  make   Make   @relation(fields: [makeId], references: [id])
+  makeId Int
+  name   String
+
+  Car        Car[]
+  Inspection Inspection[]
+  @@unique([make, name])
 }
 
 model Inspection {
@@ -41,40 +71,87 @@ model Inspection {
   station   Station  @relation(fields: [stationId], references: [id])
   stationId Int
 
-  // Identification
   model                 Model    @relation(fields: [modelId], references: [id])
   modelId               Int
-  mileage               Int /// [KM]
+  mileage               Int /// [km]
   firstRegistrationDate DateTime
   age                   Int /// [months] calc: createdAt - firstRegistrationDate
 
-  // Additional equipment
-
-  // Tires
-  // Lights
-  // Braking system
-  // Steering system
-  // Undercarriage, suspension and other
-  // Electrical installation
-  // Body and equipment
-  // Environmental protection issues
-  // Additional conditions
+  inspectionQualitativeFaults  InspectionQualitativeFault[]
+  inspectionQuantitativeFaults InspectionQuantitativeFault[]
 
   result Result
+  Car    Car?   @relation(fields: [carId], references: [id])
+  carId  Int?
 }
 
-model Action {
-  id Int @id @default(autoincrement())
+model InspectionQualitativeFault {
+  inspection   Inspection @relation(fields: [inspectionId], references: [id])
+  inspectionId Int
+
+  qualitativeFault   QualitativeFault @relation(fields: [qualitativeFaultId], references: [id])
+  qualitativeFaultId Int
+
+  dangerLevel DangerLevel
+
+  @@unique([inspectionId, qualitativeFaultId])
 }
 
-enum EngineType {
-  DIESEL
-  PETROL
-  ELECTRIC
-  HYBRID
+model QualitativeFault {
+  id           Int           @id @default(autoincrement())
+  component    String
+  part         String?
+  description  String
+  dangerLevels DangerLevel[]
+
+  inspectionQualitativeFaults InspectionQualitativeFault[]
+  @@unique([component, part, description])
+}
+
+model InspectionQuantitativeFault {
+  inspection   Inspection @relation(fields: [inspectionId], references: [id])
+  inspectionId Int
+
+  quantitativeFault   QuantitativeFault @relation(fields: [quantitativeFaultId], references: [id])
+  quantitativeFaultId Int
+
+  value Float
+
+  @@unique([inspectionId, quantitativeFaultId])
+}
+
+model QuantitativeFault {
+  id          Int     @id @default(autoincrement())
+  component   String
+  part        String?
+  description String
+  minValue    Float?
+  maxValue    Float?
+  unit        String?
+
+  inspectionQuantitativeFaults InspectionQuantitativeFault[]
+  @@unique([component, part, description])
 }
 
 enum Result {
   POSITIVE
   NEGATIVE
 }
+
+enum DangerLevel {
+  MINOR
+  SIGNIFICANT
+  MAJOR
+}
+
+// Identification
+// Additional equipment
+// Tires
+// Lights
+// Braking system
+// Steering system
+// Undercarriage, suspension and other
+// Electrical installation
+// Body and equipment
+// Environmental protection issues
+// Additional conditions
