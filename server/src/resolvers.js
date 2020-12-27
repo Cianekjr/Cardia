@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { AuthenticationError, ApolloError } from 'apollo-server-express'
+import {ApolloError, AuthenticationError} from 'apollo-server-express';
 
 const resolvers = {
   Query: {
@@ -22,6 +22,24 @@ const resolvers = {
       station.password = ""
 
       return station
+    },
+    getAllCars: async (_parent, args, ctx) => {
+      const stationId = ctx.req.session?.station?.id
+      if (!stationId) {
+        throw new AuthenticationError('Permission denied')
+      }
+
+      return await ctx.prisma.car.findMany({
+        include: {
+          model: {
+            include: {
+              bodyType: true,
+              make: true,
+            }
+          },
+          engineType: true,
+        },
+      })
     },
   },
   Mutation: {

@@ -24,21 +24,19 @@ model Station {
 
 model Car {
   id             Int          @id @default(autoincrement())
-  bodyType       BodyType     @relation(fields: [bodyTypeId], references: [id])
-  bodyTypeId     Int
   model          Model        @relation(fields: [modelId], references: [id])
   modelId        Int
-  engineCapacity Int /// [cm^3]
-  enginePower    Int /// [HP]
   engineType     EngineType   @relation(fields: [engineTypeId], references: [id])
   engineTypeId   Int
+  engineCapacity Int /// [cm^3]
+  enginePower    Int /// [HP]
   inspections    Inspection[]
 }
 
 model BodyType {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-  Car  Car[]
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  Model Model[]
 }
 
 model EngineType {
@@ -54,13 +52,15 @@ model Make {
 }
 
 model Model {
-  id     Int    @id @default(autoincrement())
-  make   Make   @relation(fields: [makeId], references: [id])
-  makeId Int
-  name   String
+  id         Int      @id @default(autoincrement())
+  make       Make     @relation(fields: [makeId], references: [id])
+  makeId     Int
+  bodyType   BodyType @relation(fields: [bodyTypeId], references: [id])
+  bodyTypeId Int
+  name       String
 
-  Car Car[]
   @@unique([makeId, name])
+  Car Car[]
 }
 
 model Inspection {
@@ -89,7 +89,6 @@ model InspectionQualitativeFault {
   qualitativeFaultId Int
 
   dangerLevel DangerLevel
-
   @@unique([inspectionId, qualitativeFaultId])
 }
 
@@ -100,8 +99,8 @@ model QualitativeFault {
   description  String
   dangerLevels DangerLevel[]
 
-  InspectionQualitativeFault InspectionQualitativeFault[]
   @@unique([component, part, description])
+  InspectionQualitativeFault InspectionQualitativeFault[]
 }
 
 model InspectionQuantitativeFault {
@@ -112,7 +111,6 @@ model InspectionQuantitativeFault {
   quantitativeFaultId Int
 
   value Float
-
   @@unique([inspectionId, quantitativeFaultId])
 }
 
@@ -125,8 +123,8 @@ model QuantitativeFault {
   maxValue    Float?
   unit        String
 
-  InspectionQuantitativeFault InspectionQuantitativeFault[]
   @@unique([component, part, description])
+  InspectionQuantitativeFault InspectionQuantitativeFault[]
 }
 
 enum Result {

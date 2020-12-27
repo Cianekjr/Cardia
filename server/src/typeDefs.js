@@ -14,14 +14,12 @@ const typeDefs = gql`
 
 	type Car {
     id: Int!
-    bodyType: BodyType!
-    bodyTypeId: Int!
     model: Model!
     modelId: Int!
+		engineType: EngineType!
+		engineTypeId: Int!
     engineCapacity: Int!
     enginePower: Int!
-    engineType: EngineType!
-    engineTypeId: Int!
     inspections: [Inspection!]!
 	}
 
@@ -29,6 +27,7 @@ const typeDefs = gql`
     id: Int!
     name: String!
     Car: [Car!]!
+    Model: [Model!]!
 	}
 
 	type EngineType {
@@ -47,6 +46,8 @@ const typeDefs = gql`
     id: Int!
     make: Make!
     makeId: Int!
+		bodyType: BodyType!
+		bodyTypeId: Int!
     name: String!
   
     Car: [Car!]!
@@ -139,6 +140,7 @@ const typeDefs = gql`
 
 	type Query {
 		getCurrentStation: Station
+    getAllCars: [Car!]!
   }
 
 	type Mutation {

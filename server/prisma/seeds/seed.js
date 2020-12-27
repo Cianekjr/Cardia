@@ -13,7 +13,7 @@ faker.locale = "pl";
 const seed = async () => {
   await reset(prisma)
 
-  for(let i = 0; i < 20; i++) {
+  for (let i = 0; i < 20; i++) {
     const hashedPassword = await bcrypt.hash(faker.internet.password(), 10);
     await prisma.station.create({
       data: {
@@ -39,7 +39,7 @@ const seed = async () => {
   }))
 
   await Promise.all(quantitativeFaults.map(async fault => {
-    const x = await prisma.quantitativeFault.create({
+    await prisma.quantitativeFault.create({
       data: fault
     })
   }))
@@ -73,7 +73,8 @@ const seed = async () => {
       await prisma.model.create({
         data: {
           make: { connect: { name: car.make } },
-          name: model,
+          name: model.name,
+          bodyType: { connect: { name: model.bodyType }},
         },
       })
     }))
@@ -90,12 +91,11 @@ const seed = async () => {
 
     await prisma.car.create({
       data: {
-        bodyType: { connect: { name: getRandomArg(bodyTypes) } },
         model: {
           connect: {
             makeId_name: {
               makeId: make.id,
-              name: getRandomArg(car.models)
+              name: getRandomArg(car.models).name
             }
           }
         },
@@ -146,7 +146,6 @@ const seed = async () => {
       }
     })
   }
-
 }
 
 seed()

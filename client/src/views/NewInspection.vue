@@ -1,12 +1,14 @@
 <template>
-  <div class="home">
-    NEW INSPECTION
-  </div>
+  <TheNewInspectionForm />
 </template>
 
 <script lang="ts">
+import TheNewInspectionForm from '@/components/TheNewInspectionForm.vue'
 
 export default ({
-  name: 'NewInspection'
+  name: 'NewInspection',
+  components: {
+    TheNewInspectionForm
+  }
 })
 </script>

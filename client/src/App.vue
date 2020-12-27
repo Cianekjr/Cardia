@@ -1,9 +1,7 @@
 <template>
-  <div class="p-d-flex p-flex-column app-wrapper">
-    <TheLayout>
-      <router-view/>
-    </TheLayout>
-  </div>
+  <TheLayout>
+    <router-view/>
+  </TheLayout>
 </template>
 
 <script lang="ts">
@@ -29,10 +27,21 @@ body {
 a {
   text-decoration: none;
 }
+
+.p-fluid .p-inputnumber .p-inputnumber-input {
+  width: 100% !important;
+}
+
+.p-datepicker-year {
+  font-size: 1.2em;
+  background-color: var(--surface-b);
+  color: var(--text-color);
+  border: 1px solid var(--surface-d);
+}
 </style>
 
 <style lang="scss" scoped>
 .app-wrapper {
-  min-height: 100vh;
+  min-height: 200vh;
 }
 </style>

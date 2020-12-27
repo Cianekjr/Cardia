@@ -535,14 +535,22 @@ export const quantitativeFaults = [
 ]
 
 export const engineTypes = ['Diesel', 'Benzyna', 'Elektryczny', 'Hybryda']
-export const bodyTypes = ['SUV', 'Coupe', 'Limuzyna', 'Sedan']
+export const bodyTypes = ['SUV', 'Limuzyna', 'Sedan']
 export const cars = [
   {
     make: 'Audi',
-    models: ['A4', 'A6', 'A8']
+    models: [
+      { name: 'A4', bodyType: 'Sedan' },
+      { name: 'A6', bodyType: 'Sedan' },
+      { name: 'A8', bodyType: 'Limuzyna' },
+      { name: 'RS7', bodyType: 'Sedan' },
+    ],
   },
   {
     make: 'Mercedes-Benz',
-    models: ['GLA', 'GLC']
+    models: [
+      { name: 'GLA', bodyType: 'SUV' },
+      { name: 'GLC', bodyType: 'SUV' },
+    ],
   },
 ]
