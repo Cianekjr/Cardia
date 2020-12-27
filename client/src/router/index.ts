@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import gql from 'graphql-tag'
-import Home from '../views/Home.vue'
+import Home from '@/views/Home.vue'
 import { apolloClient } from '@/plugins/ApolloClient'
 
 const routes: Array<RouteRecordRaw> = [
@@ -36,7 +36,7 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const isNeedRefetch = from.name === 'Login' || from.name === 'Register'
+  const isNeedRefetch = from.name === 'Login' || from.name === 'Register' || to.name === 'Login'
 
   const { data } = await apolloClient.query({
     query: gql`

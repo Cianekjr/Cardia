@@ -5,21 +5,20 @@ import { useRouter } from 'vue-router'
 export default function () {
   const router = useRouter()
 
-  const { result, error } = useQuery(gql`
-    query getCurrentStation {
-      getCurrentStation {
-        id
-        email
-        name
-      }
-    },
-  `)
+  try {
+    const { result } = useQuery(gql`
+      query getCurrentStation {
+        getCurrentStation {
+          id
+          email
+          name
+        }
+      },
+    `)
+    const station = useResult(result)
 
-  const station = useResult(result, null, data => data.getCurrentStation)
-
-  if (!station || error.value) {
+    return { station }
+  } catch {
     router.push({ name: 'Login' })
   }
-
-  return { station }
 }

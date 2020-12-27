@@ -26,6 +26,22 @@ const resolvers = {
   },
   Mutation: {
     signUp: async (_parent, { input: { email, password, name } }, ctx) => {
+      const existedEmailStation = await ctx.prisma.station.findUnique({
+        where: {
+          email
+        }
+      })
+      if (existedEmailStation) {
+        throw new ApolloError('Email already in use')
+      }
+      const existedNameStation = await ctx.prisma.station.findUnique({
+        where: {
+          name
+        }
+      })
+      if (existedNameStation) {
+        throw new ApolloError('Name already in use')
+      }
       const hashedPassword = await bcrypt.hash(password, 10);
       const station = await ctx.prisma.station.create({
         data: {
@@ -68,6 +84,62 @@ const resolvers = {
       } else {
         throw new ApolloError('Email or password is not correct')
       }
+    },
+    logout: async (_parent, _, ctx) => {
+      ctx.req.session.station = null
+      return true
+    },
+    createInspection: async (_parent, {
+      input: { carId, mileage, age, inspectionQualitativeFaults, inspectionQuantitativeFaults, result }
+      }, ctx) => {
+      const stationId = ctx.req.session?.station?.id
+      if (!stationId) {
+        throw new AuthenticationError('Permission denied')
+      }
+
+      const inspection = await ctx.prisma.inspection.create({
+        data: {
+          station: { connect: { id: stationId } },
+          car: { connect: { id: carId } },
+          mileage,
+          age,
+          inspectionQualitativeFaults: {
+            create: inspectionQualitativeFaults.map(({ qualitativeFaultId, dangerLevel }) => {
+              return { qualitativeFault: { connect: { id: qualitativeFaultId } }, dangerLevel }
+            })
+          },
+          inspectionQuantitativeFaults: {
+            create: inspectionQuantitativeFaults.map(({ quantitativeFaultId, value }) => {
+              return { quantitativeFault: { connect: { id: quantitativeFaultId } }, value }
+            })
+          },
+          result: 'NEGATIVE'
+        },
+        include: {
+          station: true,
+          car: {
+            include: {
+              model: {
+                include: {
+                  make: true,
+                },
+              },
+            },
+          },
+          inspectionQualitativeFaults: {
+            include: {
+              qualitativeFault: true,
+            },
+          },
+          inspectionQuantitativeFaults: {
+            include: {
+              quantitativeFault: true,
+            },
+          },
+        },
+      })
+
+      return inspection
     },
   },
 };

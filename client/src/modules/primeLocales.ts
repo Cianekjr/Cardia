@@ -14,9 +14,9 @@ const locale = {
   weekHeader: 'Tydz',
   firstDayOfWeek: 1,
   dateFormat: 'dd-mm-yy',
-  weak: 'Słabe',
-  medium: 'Średnie',
-  strong: 'Silne',
+  weakLabel: 'Słabe',
+  mediumLabel: 'Średnie',
+  strongLabel: 'Silne',
   passwordPrompt: 'Wpisz hasło'
 }
 

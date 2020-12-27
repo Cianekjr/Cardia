@@ -1,7 +1,7 @@
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core'
 
 const httpLink = createHttpLink({
-  uri: process.env.VUE_APP_API_URL || 'http://localhost:3000/graphql',
+  uri: 'http://localhost:3000/graphql',
   credentials: 'include'
 })
 const cache = new InMemoryCache()

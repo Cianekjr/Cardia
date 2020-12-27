@@ -24,15 +24,17 @@ services:
       - ./server/prisma:/server/prisma
     env_file:
       - .env
-#  client:
-#    build: client
-#    container_name: client
-#    restart: always
-#    ports:
-#      - "8080:8080"
-#    depends_on:
-#      - server
-#    volumes:
-#      - ./client:/client
-#    env_file:
-#      - .env
+  client:
+    build: client
+    container_name: client
+    restart: always
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    ports:
+      - "8080:8080"
+    depends_on:
+      - server
+    volumes:
+      - ./client/src:/client/src:cached
+    env_file:
+      - .env

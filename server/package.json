@@ -12,7 +12,8 @@
     "prisma:up": "prisma migrate --experimental up --auto-approve --create-db",
     "prisma:generate": "prisma generate",
     "prisma:format": "prisma format",
-    "prisma:studio": "prisma studio --experimental",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "node ./prisma/seeds/seed.js",
     "generate": "npm run prisma:format && npm run prisma:save && npm run prisma:up && npm run prisma:generate"
   },
   "author": "",

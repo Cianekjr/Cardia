@@ -17,7 +17,7 @@ model Station {
   id          Int          @id @default(autoincrement())
   createdAt   DateTime     @default(now())
   email       String       @unique
-  name        String
+  name        String       @unique
   password    String
   inspections Inspection[]
 }
@@ -59,9 +59,8 @@ model Model {
   makeId Int
   name   String
 
-  Car        Car[]
-  Inspection Inspection[]
-  @@unique([make, name])
+  Car Car[]
+  @@unique([makeId, name])
 }
 
 model Inspection {
@@ -71,18 +70,15 @@ model Inspection {
   station   Station  @relation(fields: [stationId], references: [id])
   stationId Int
 
-  model                 Model    @relation(fields: [modelId], references: [id])
-  modelId               Int
-  mileage               Int /// [km]
-  firstRegistrationDate DateTime
-  age                   Int /// [months] calc: createdAt - firstRegistrationDate
+  car     Car @relation(fields: [carId], references: [id])
+  carId   Int
+  mileage Int /// [km]
+  age     Int /// [months]
 
   inspectionQualitativeFaults  InspectionQualitativeFault[]
   inspectionQuantitativeFaults InspectionQuantitativeFault[]
 
   result Result
-  Car    Car?   @relation(fields: [carId], references: [id])
-  carId  Int?
 }
 
 model InspectionQualitativeFault {
@@ -104,7 +100,7 @@ model QualitativeFault {
   description  String
   dangerLevels DangerLevel[]
 
-  inspectionQualitativeFaults InspectionQualitativeFault[]
+  InspectionQualitativeFault InspectionQualitativeFault[]
   @@unique([component, part, description])
 }
 
@@ -127,9 +123,9 @@ model QuantitativeFault {
   description String
   minValue    Float?
   maxValue    Float?
-  unit        String?
+  unit        String
 
-  inspectionQuantitativeFaults InspectionQuantitativeFault[]
+  InspectionQuantitativeFault InspectionQuantitativeFault[]
   @@unique([component, part, description])
 }
 

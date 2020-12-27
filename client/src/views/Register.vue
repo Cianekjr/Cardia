@@ -1,12 +1,14 @@
 <template>
-  <div class="home">
-    Register
-  </div>
+  <TheRegisterForm />
 </template>
 
 <script lang="ts">
+import TheRegisterForm from '@/components/TheRegisterForm.vue'
 
 export default ({
-  name: 'Register'
+  name: 'Register',
+  components: {
+    TheRegisterForm
+  }
 })
 </script>
