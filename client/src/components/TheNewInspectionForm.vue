@@ -11,16 +11,15 @@
             <CascadeSelect
               id="car"
               v-model="car"
-              :options="allCars"
+              :options="allCarsOptions"
               optionLabel="displayName"
               optionValue="id"
               optionGroupLabel="name"
-              dataKey="id"
               :optionGroupChildren="['models', 'variants']"
               :class="carError ? 'p-invalid' : ''"
               aria-describedby="car-help"
-              :disabled="allCarsLoading"
-              >
+              :disabled="allCarsLoading || allCarsError"
+            >
               <template #option="slotProps">
                 <div class="country-item">
                   <span>{{ slotProps.option.name || slotProps.option.cname }}</span>
@@ -54,7 +53,8 @@
               view="month"
               dateFormat="mm.yy"
               :yearNavigator="true"
-              yearRange="1900:2030"
+              :maxDate="new Date()"
+              :yearRange="`1900:${new Date().getFullYear()}`"
               :class="firstRegistrationDateError ? 'p-invalid' : ''"
               aria-describedby="firstRegistrationDate-help"
               :showIcon="true"
@@ -63,7 +63,9 @@
             <small v-if="firstRegistrationDateError" id="firstRegistrationDate-help" class="p-invalid">{{ firstRegistrationDateError }}</small>
           </div>
         </div>
-        <div class="p-col-4"></div>
+        <div class="p-col-12">
+
+        </div>
         <Button label="Dodaj" type="submit" :icon="loading ? 'pi pi-spin pi-spinner' : 'pi pi-check'" iconPos="right" />
       </form>
     </template>
@@ -71,80 +73,19 @@
 </template>
 
 <script lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
-import { useQuery, useResult } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
 import { useToast } from 'primevue/usetoast'
+import useApollo from '@/components/TheNewInspectionForm.graphql.vue'
 
 export default ({
-  setup () {
+  setup: function () {
     const toast = useToast()
-    const { result, loading: allCarsLoading } = useQuery(gql`
-      query getAllCars {
-        getAllCars {
-          id
-          model {
-            id
-            name
-            make {
-              id
-              name
-            }
-            bodyType {
-              id
-              name
-            }
-          }
-          engineType {
-            id
-            name
-          }
-          engineCapacity
-          enginePower
-        }
-      }
-    `)
-
-    const allCars = ref([])
-
-    const allCarsResult = useResult(result)
-
-    watch(allCarsResult, () => {
-      if (!allCarsResult.value) {
-        allCars.value = []
-      }
-      const carsObjects = allCarsResult.value.map(item => ({
-        id: item.id,
-        make: item.model.make.name,
-        model: `${item.model.name} (${item.model.bodyType.name})`,
-        engine: `${item.engineType.name} - ${item.engineCapacity}cm^3 - ${item.enginePower}KM`
-      }))
-
-      let sortedCars = carsObjects.reduce((acc, item) => {
-        if (!acc) { acc = new Map() }
-        if (!acc.has(item.make)) {
-          acc.set(item.make, { name: item.make, models: new Map() })
-        }
-        if (!acc.get(item.make).models.has(item.model)) {
-          acc.get(item.make).models.set(item.model, { name: item.model, variants: new Map() })
-        }
-        if (!acc.get(item.make).models.get(item.model).variants.has(item.engine)) {
-          acc.get(item.make).models.get(item.model).variants.set(item.engine, { id: item.id, cname: item.engine, displayName: `${item.make} ${item.model} ${item.engine}` })
-        }
-        return acc
-      }, new Map())
-
-      sortedCars = Array.from(sortedCars, (arr) => arr[1])
-      sortedCars.forEach((_, index0) => {
-        sortedCars[index0].models = Array.from(sortedCars[index0].models, (arr) => arr[1])
-        sortedCars[index0].models.forEach((_, index1) => {
-          sortedCars[index0].models[index1].variants = Array.from(sortedCars[index0].models[index1].variants, (arr) => arr[1])
-        })
-      })
-      allCars.value = sortedCars
-    })
+    const {
+      allCarsOptions, allCarsLoading, allCarsError,
+      qualitativeFaults, quantitativeFaults, allFaultsLoading, allFaultsError
+    } = useApollo()
 
     const { handleSubmit, meta } = useForm({
       initialValues: {
@@ -169,15 +110,25 @@ export default ({
         console.log({ ...values })
         toast.add({ severity: 'success', summary: 'Sukces!', detail: 'Dodano nowe badanie techniczne', life: 4000 })
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'Błąd!', detail: 'Nieoczekiwany błąd! Skontaktuj się z administratorem', life: 4000 })
+        toast.add({
+          severity: 'error',
+          summary: 'Błąd!',
+          detail: 'Nieoczekiwany błąd! Skontaktuj się z administratorem',
+          life: 4000
+        })
       }
     })
 
     return {
       car,
       carError,
-      allCars,
+      allCarsOptions,
       allCarsLoading,
+      allCarsError,
+      qualitativeFaults,
+      quantitativeFaults,
+      allFaultsLoading,
+      allFaultsError,
       mileage,
       mileageError,
       firstRegistrationDate,

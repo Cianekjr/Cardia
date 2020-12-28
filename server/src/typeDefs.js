@@ -129,6 +129,11 @@ const typeDefs = gql`
 		value: Float!
 	}
   
+  type Faults {
+		qualitativeFaults: [QualitativeFault!]!
+		quantitativeFaults: [QuantitativeFault!]!
+  }
+  
   input CreateInspectionInput {
 		carId: Int!
 		mileage: Int!
@@ -141,6 +146,7 @@ const typeDefs = gql`
 	type Query {
 		getCurrentStation: Station
     getAllCars: [Car!]!
+    getAllFaults: Faults!
   }
 
 	type Mutation {
