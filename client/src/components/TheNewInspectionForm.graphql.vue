@@ -81,18 +81,40 @@ function useApollo () {
     allCarsOptions.value = sortedCars
   })
 
+  const { result: allComponentsResult, loading: allComponentsLoading, error: allComponentsError, onError: onAllComponentsError } = useQuery(gql`
+    query getAllComponents {
+      getAllComponents {
+        id
+        name
+      }
+    }
+  `)
+
+  const allComponents = useResult(allComponentsResult, [])
+
+  onAllComponentsError(() => {
+    toast.add({ severity: 'error', summary: 'Błąd!', detail: 'Nie udało się załadować podzespołów', life: 4000 })
+  })
+
   const { result: getAllFaults, loading: allFaultsLoading, error: allFaultsError, onError: onAllFaultsError } = useQuery(gql`
     query getAllFaults {
       getAllFaults {
         qualitativeFaults {
           id
-          component
+          component {
+            id
+            name
+          }
           part
           dangerLevels
+          description
         }
         quantitativeFaults {
           id
-          component
+          component {
+            id
+            name
+          }
           part
           description
           minValue
@@ -107,9 +129,9 @@ function useApollo () {
     toast.add({ severity: 'error', summary: 'Błąd!', detail: 'Nie udało się załadować usterek', life: 4000 })
   })
 
-  const qualitativeFaults = useResult(getAllFaults, [], data => data.qualitativeFaults)
+  const qualitativeFaults = useResult(getAllFaults, [], data => data?.getAllFaults?.qualitativeFaults)
 
-  const quantitativeFaults = useResult(getAllFaults, [], data => data.quantitativeFaults)
+  const quantitativeFaults = useResult(getAllFaults, [], data => data?.getAllFaults?.quantitativeFaults)
 
   return {
     allCarsOptions,
@@ -118,7 +140,9 @@ function useApollo () {
     qualitativeFaults,
     quantitativeFaults,
     allFaultsLoading,
-    allFaultsError
+    allFaultsError,
+    allComponents,
+    allComponentsLoading
   }
 }
 

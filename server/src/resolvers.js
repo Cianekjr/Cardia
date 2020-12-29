@@ -48,22 +48,34 @@ const resolvers = {
       }
 
       const qualitativeFaults = await ctx.prisma.qualitativeFault.findMany({
+        include: {
+          component: true,
+        },
         orderBy: [
-          { component: 'desc' },
           { part: 'desc' },
           { description: 'desc' },
         ],
       })
 
       const quantitativeFaults = await ctx.prisma.quantitativeFault.findMany({
+        include: {
+          component: true,
+        },
         orderBy: [
-          { component: 'desc' },
           { part: 'desc' },
           { description: 'desc' },
         ],
       })
 
       return ({ qualitativeFaults, quantitativeFaults })
+    },
+    getAllComponents: async (_parent, args, ctx) => {
+      const stationId = ctx.req.session?.station?.id
+      if (!stationId) {
+        throw new AuthenticationError('Permission denied')
+      }
+
+      return await ctx.prisma.component.findMany()
     },
   },
   Mutation: {

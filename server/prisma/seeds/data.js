@@ -534,6 +534,20 @@ export const quantitativeFaults = [
   },
 ]
 
+export const components = [
+  'Identyfikacja pojazdu',
+  'Dodatkowe wyposażenie pojazdu',
+  'Ogumienie',
+  'Światła',
+  'Układ hamulcowy',
+  'Układ kierowniczy',
+  'Podwozie, zawieszenie i inne',
+  'Instalacja elektryczna',
+  'Nadwozie i osprzęt',
+  'Zagadnienia związane z ochroną środowiska',
+  'Warunki dodatkowe',
+]
+
 export const engineTypes = ['Diesel', 'Benzyna', 'Elektryczny', 'Hybryda']
 export const bodyTypes = ['SUV', 'Limuzyna', 'Sedan']
 export const cars = [

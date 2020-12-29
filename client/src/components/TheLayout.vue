@@ -63,14 +63,14 @@ export default ({
       {
         label: 'Statystyki',
         items: [
-          { label: 'Panel', icon: 'pi pi-fw pi-chart-bar', to: '/' }
+          { label: 'Panel', icon: 'pi pi-fw pi-chart-bar', to: { name: 'Home' } }
         ]
       },
       {
         label: 'Badanie techniczne',
         visible: isAuth.value,
         items: [
-          { label: 'Dodaj', icon: 'pi pi-fw pi-plus-circle', to: '/inspections/new' }
+          { label: 'Dodaj', icon: 'pi pi-fw pi-plus-circle', to: { name: 'NewInspection' } }
         ]
       }
     ])
@@ -137,7 +137,7 @@ export default ({
 
 .layout-content {
   margin-left: 0;
-  padding-top: 70px;
+  margin-top: 70px;
   min-height: 100vh;
   transition: margin-left .4s cubic-bezier(.05,.74,.2,.99);
 

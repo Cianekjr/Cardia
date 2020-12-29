@@ -11,19 +11,19 @@ const routes: Array<RouteRecordRaw> = [
     meta: { notLoggedAllowed: true }
   },
   {
-    path: '/login',
+    path: '/logowanie',
     name: 'Login',
     component: () => import('../views/Login.vue'),
     meta: { notLoggedAllowed: true }
   },
   {
-    path: '/register',
+    path: '/rejestracja',
     name: 'Register',
     component: () => import('../views/Register.vue'),
     meta: { notLoggedAllowed: true }
   },
   {
-    path: '/inspections/new',
+    path: '/badania/nowe',
     name: 'NewInspection',
     component: () => import('../views/NewInspection.vue'),
     meta: { notLoggedAllowed: false }

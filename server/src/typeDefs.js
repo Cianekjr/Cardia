@@ -81,8 +81,9 @@ const typeDefs = gql`
 
 	type QualitativeFault {
 		id: ID!
-		component: String!
-		part: String
+		component: Component!
+		componentId: Int!
+		part: String!
 		description: String!
 		dangerLevels: [DangerLevel!]!
 		InspectionQualitativeFault: [InspectionQualitativeFault!]!
@@ -98,8 +99,9 @@ const typeDefs = gql`
   
   type QuantitativeFault {
 		id: Int!
-		component: String!
-		part: String
+		component: Component!
+		componentId: Int!
+		part: String!
 		description: String!
 		minValue: Float
 		maxValue: Float
@@ -107,6 +109,13 @@ const typeDefs = gql`
 
 		InspectionQuantitativeFault: [InspectionQuantitativeFault!]!
   }
+
+	type Component {
+    id: Int!
+    name: String!
+    QualitativeFault: [QualitativeFault!]!
+    QuantitativeFault: [QuantitativeFault!]!
+	}
 
 	input SignUpInput {
 		email: String!
@@ -147,6 +156,7 @@ const typeDefs = gql`
 		getCurrentStation: Station
     getAllCars: [Car!]!
     getAllFaults: Faults!
+		getAllComponents: [Component!]!
   }
 
 	type Mutation {

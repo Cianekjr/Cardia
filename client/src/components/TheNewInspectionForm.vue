@@ -63,28 +63,121 @@
             <small v-if="firstRegistrationDateError" id="firstRegistrationDate-help" class="p-invalid">{{ firstRegistrationDateError }}</small>
           </div>
         </div>
-        <div class="p-col-12">
+        <Divider></Divider>
+        <Timeline
+          :value="allComponents"
+          align="alternate"
+          layout="horizontal"
+          dataKey="id"
+        >
+          <template #marker="slotProps">
+            <Button
+              :label="String(slotProps.item.id)"
+              class="p-button-rounded p-jc-center"
+              :class="[
+                (componentsStatus[slotProps.item.id] && componentsStatus[slotProps.item.id].status) || 'p-button-danger',
+                { 'component-active': slotProps.item.id === activeComponent.id }
+              ]"
+              @click="handleComponentChange(slotProps.item)"
+              v-tooltip.top="slotProps.item.name"
+            />
+          </template>
+        </Timeline>
 
+        <div class="p-col-12">
+          <h2 class="p-d-block p-text-center">{{ activeComponent && activeComponent.name }}</h2>
+          <DataTable :value="chosenQualitativeFaultsByComponent">
+            <template #header>
+              <Dropdown v-model="form.qualitativeFault" :options="qualitativeFaultsByComponent" :filter="true" placeholder="Usterki jakościowe" :showClear="true" @change="handleQualitativeFaultChange">
+                <template #option="slotProps">
+                  <div class="country-item">
+                    <div>{{ slotProps.option.part }}</div>
+                    <div>{{ slotProps.option.description }}</div>
+                    <Divider class="p-mb-0 p-mt-2"/>
+                  </div>
+                </template>
+              </Dropdown>
+            </template>
+            <Column field="part" header="Część"></Column>
+            <Column field="description" header="Opis"></Column>
+            <Column field="dangerLevels" header="Ocena usterki">
+              <template #body="slotProps">
+                <SelectButton
+                  v-model="slotProps.data.dangerLevel"
+                  :options="dangerLevels(slotProps.data.dangerLevels)"
+                  optionLabel="name"
+                  optionValue="value"
+                  optionDisabled="disabled"
+                  v-tooltip.top="'UD - usterka drobna\nUI - usterka istotna\nUSZ - usterka stwarzająca zagrożenie'"
+                />
+              </template>
+            </Column>
+            <Column>
+              <template #body="slotProps">
+                <Button icon="pi pi-times" class="p-button-rounded p-button-danger" @click="onQualitativeFaultRemove(slotProps.data.id)"/>
+              </template>
+            </Column>
+          </DataTable>
+
+          <DataTable :value="chosenQuantitativeFaultsByComponent">
+            <template #header>
+              <Dropdown v-model="form.quantitativeFault" :options="quantitativeFaultsByComponent" :filter="true" placeholder="Usterki ilościowe" :showClear="true" @change="handleQuantitativeFaultChange">
+                <template #option="slotProps">
+                  <div class="country-item">
+                    <div>{{ slotProps.option.part }}</div>
+                    <div>{{ slotProps.option.description }}</div>
+                    <Divider class="p-mb-0 p-mt-2"/>
+                  </div>
+                </template>
+              </Dropdown>
+            </template>
+            <Column field="part" header="Część"></Column>
+            <Column field="description" header="Opis"></Column>
+            <Column header="Wartość">
+              <template #body="slotProps">
+                <div class="p-field p-fluid p-m-0 p-p-0">
+                  <div class="p-inputgroup">
+                    <InputNumber
+                      v-model="slotProps.data.value"
+                      id="faultValue"
+                      aria-describedby="faultValue-help"
+                      class="p-d-block"
+                    />
+                    <span class="p-inputgroup-addon">{{ slotProps.data.unit }}</span>
+                  </div>
+                </div>
+              </template>
+            </Column>
+            <Column>
+              <template #body="slotProps">
+                <Button icon="pi pi-times" class="p-button-rounded p-button-danger" @click="onQuantitativeFaultRemove(slotProps.data.id)"/>
+              </template>
+            </Column>
+          </DataTable>
         </div>
+
         <Button label="Dodaj" type="submit" :icon="loading ? 'pi pi-spin pi-spinner' : 'pi pi-check'" iconPos="right" />
       </form>
     </template>
   </Card>
 </template>
 
-<script lang="ts">
-import { ref } from 'vue'
+<script>
+import { ref, watch, computed } from 'vue'
 import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
 import { useToast } from 'primevue/usetoast'
 import useApollo from '@/components/TheNewInspectionForm.graphql.vue'
+import { useRoute } from 'vue-router'
 
 export default ({
   setup: function () {
     const toast = useToast()
+    const route = useRoute()
     const {
       allCarsOptions, allCarsLoading, allCarsError,
-      qualitativeFaults, quantitativeFaults, allFaultsLoading, allFaultsError
+      qualitativeFaults, quantitativeFaults, allFaultsLoading, allFaultsError,
+      allComponents, allComponentsLoading
     } = useApollo()
 
     const { handleSubmit, meta } = useForm({
@@ -95,6 +188,70 @@ export default ({
       }
     })
 
+    const componentsStatus = ref({})
+    const activeComponent = ref()
+
+    const handleComponentChange = (component) => {
+      componentsStatus.value[component.id] = { status: 'p-button-success' }
+      activeComponent.value = component
+    }
+
+    watch(allComponents, () => {
+      activeComponent.value = allComponents.value[0]
+      handleComponentChange(allComponents.value[0])
+    })
+
+    const form = ref({
+      qualitativeFault: null,
+      quantitativeFault: null
+    })
+
+    // qualitativeFaults
+    const chosenQualitativeFaults = ref([])
+
+    const chosenQualitativeFaultsByComponent = computed(() => {
+      return chosenQualitativeFaults.value?.filter(item => item.component.id === activeComponent.value.id)
+    })
+
+    const qualitativeFaultsByComponent = computed(() => {
+      const x = qualitativeFaults.value?.filter(item => item.component.id === activeComponent.value.id)
+      const chosenQualitativeFaultsIds = chosenQualitativeFaults.value?.map(item => { return item.id })
+      return x.filter(item => !chosenQualitativeFaultsIds.includes(item.id))
+    })
+
+    const handleQualitativeFaultChange = (e) => {
+      chosenQualitativeFaults.value.unshift({ ...e.value, dangerLevel: e.value.dangerLevels[0] })
+      form.value.qualitativeFault = null
+    }
+
+    const onQualitativeFaultRemove = (id) => {
+      const removeIndex = chosenQualitativeFaults.value?.findIndex(item => item.id === id)
+      chosenQualitativeFaults.value?.splice(removeIndex, 1)
+    }
+
+    // quantitativeFaults
+    const chosenQuantitativeFaults = ref([])
+
+    const chosenQuantitativeFaultsByComponent = computed(() => {
+      return chosenQuantitativeFaults.value?.filter(item => item.component.id === activeComponent.value?.id)
+    })
+
+    const quantitativeFaultsByComponent = computed(() => {
+      const x = quantitativeFaults.value?.filter(item => item.component.id === activeComponent.value?.id)
+      const chosenQuantitativeFaultsIds = chosenQuantitativeFaults.value?.map(item => { return item.id })
+      return x.filter(item => !chosenQuantitativeFaultsIds.includes(item.id))
+    })
+
+    const handleQuantitativeFaultChange = (e) => {
+      chosenQuantitativeFaults.value.unshift({ ...e.value, value: null })
+      form.value.quantitativeFault = null
+    }
+
+    const onQuantitativeFaultRemove = (id) => {
+      const removeIndex = chosenQuantitativeFaults.value?.findIndex(item => item.id === id)
+      chosenQuantitativeFaults.value.splice(removeIndex, 1)
+    }
+
     const loading = ref(false)
 
     const messageText = ref('')
@@ -104,9 +261,7 @@ export default ({
 
     const onSubmit = handleSubmit(async (values) => {
       try {
-        // const user = await signIn({ input: values })
-        // const name = user?.data?.signIn?.name
-        // await push({ name: 'Home' })
+        console.log(route)
         console.log({ ...values })
         toast.add({ severity: 'success', summary: 'Sukces!', detail: 'Dodano nowe badanie techniczne', life: 4000 })
       } catch (e) {
@@ -119,6 +274,14 @@ export default ({
       }
     })
 
+    const dangerLevels = ref((dangerLevels) => {
+      return [
+        { name: 'UD', value: 'MINOR', disabled: !dangerLevels.includes('MINOR') },
+        { name: 'UI', value: 'SIGNIFICANT', disabled: !dangerLevels.includes('SIGNIFICANT') },
+        { name: 'USZ', value: 'MAJOR', disabled: !dangerLevels.includes('MAJOR') }
+      ]
+    })
+
     return {
       car,
       carError,
@@ -126,9 +289,21 @@ export default ({
       allCarsLoading,
       allCarsError,
       qualitativeFaults,
+      handleQualitativeFaultChange,
+      chosenQualitativeFaults,
+      onQualitativeFaultRemove,
+      chosenQualitativeFaultsByComponent,
+      qualitativeFaultsByComponent,
       quantitativeFaults,
+      handleQuantitativeFaultChange,
+      chosenQuantitativeFaults,
+      onQuantitativeFaultRemove,
+      chosenQuantitativeFaultsByComponent,
+      quantitativeFaultsByComponent,
       allFaultsLoading,
       allFaultsError,
+      allComponents,
+      allComponentsLoading,
       mileage,
       mileageError,
       firstRegistrationDate,
@@ -136,7 +311,12 @@ export default ({
       onSubmit,
       meta,
       loading,
-      messageText
+      messageText,
+      dangerLevels,
+      form,
+      handleComponentChange,
+      componentsStatus,
+      activeComponent
     }
   }
 })
@@ -146,5 +326,13 @@ export default ({
 <style scoped lang="scss">
 .login-title {
   font-size: 1.2em;
+}
+
+.component-active {
+  box-shadow: 0 0 10px 2px var(--text-color) !important;
+}
+
+.p-selectbutton.p-buttonset {
+  width: max-content;
 }
 </style>

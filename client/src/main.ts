@@ -25,6 +25,15 @@ import Toast from 'primevue/toast'
 import Menu from 'primevue/menu'
 import Calendar from 'primevue/calendar'
 import CascadeSelect from 'primevue/cascadeselect'
+import SelectButton from 'primevue/selectbutton'
+import Divider from 'primevue/divider'
+import Tooltip from 'primevue/tooltip'
+import Dropdown from 'primevue/dropdown'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Steps from 'primevue/steps'
+import Timeline from 'primevue/timeline'
+import Badge from 'primevue/badge'
 
 const app = createApp(App as never)
 app.component('InputText', InputText)
@@ -38,6 +47,16 @@ app.component('TabMenu', TabMenu)
 app.component('Menu', Menu)
 app.component('Calendar', Calendar)
 app.component('CascadeSelect', CascadeSelect)
+app.component('SelectButton', SelectButton)
+app.component('Divider', Divider)
+app.component('Dropdown', Dropdown)
+app.component('DataTable', DataTable)
+app.component('Column', Column)
+app.component('Steps', Steps)
+app.component('Timeline', Timeline)
+app.component('Badge', Badge)
+
+app.directive('tooltip', Tooltip)
 
 app
   .provide(DefaultApolloClient, apolloClient)

@@ -2,7 +2,7 @@ import faker from 'faker'
 import Prisma from "@prisma/client";
 import bcrypt from "bcrypt";
 import { getRandomArg, getRandomInt, getMixString } from './helpers.js'
-import { engineTypes, bodyTypes, qualitativeFaults, quantitativeFaults, cars} from './data.js'
+import {engineTypes, bodyTypes, qualitativeFaults, quantitativeFaults, cars, components} from './data.js';
 import reset from './reset.js'
 
 const { PrismaClient } = Prisma
@@ -32,15 +32,35 @@ const seed = async () => {
     },
   });
 
+  await Promise.all(components.map(async name => {
+    await prisma.component.create({
+      data: {
+        name
+      }
+    })
+  }))
+
   await Promise.all(qualitativeFaults.map(async fault => {
     await prisma.qualitativeFault.create({
-      data: fault
+      data: {
+        component: { connect: { name: fault.component } },
+        part: fault.part,
+        description: fault.description,
+        dangerLevels: fault.dangerLevels
+      }
     })
   }))
 
   await Promise.all(quantitativeFaults.map(async fault => {
     await prisma.quantitativeFault.create({
-      data: fault
+      data: {
+        component: { connect: { name: fault.component } },
+        part: fault.part,
+        description: fault.description,
+        minValue: fault.minValue,
+        maxValue: fault.maxValue,
+        unit: fault.unit,
+      }
     })
   }))
 
@@ -138,12 +158,6 @@ const seed = async () => {
         },
         result: 'NEGATIVE'
       },
-      include: {
-        station: true,
-        car: true,
-        inspectionQualitativeFaults: true,
-        inspectionQuantitativeFaults: true,
-      }
     })
   }
 }

@@ -59,8 +59,8 @@ model Model {
   bodyTypeId Int
   name       String
 
-  @@unique([makeId, name])
   Car Car[]
+  @@unique([makeId, name])
 }
 
 model Inspection {
@@ -94,13 +94,14 @@ model InspectionQualitativeFault {
 
 model QualitativeFault {
   id           Int           @id @default(autoincrement())
-  component    String
-  part         String?
+  component    Component     @relation(fields: [componentId], references: [id])
+  componentId  Int
+  part         String
   description  String
   dangerLevels DangerLevel[]
 
-  @@unique([component, part, description])
   InspectionQualitativeFault InspectionQualitativeFault[]
+  @@unique([componentId, part, description])
 }
 
 model InspectionQuantitativeFault {
@@ -115,16 +116,24 @@ model InspectionQuantitativeFault {
 }
 
 model QuantitativeFault {
-  id          Int     @id @default(autoincrement())
-  component   String
-  part        String?
+  id          Int       @id @default(autoincrement())
+  component   Component @relation(fields: [componentId], references: [id])
+  componentId Int
+  part        String
   description String
   minValue    Float?
   maxValue    Float?
   unit        String
 
-  @@unique([component, part, description])
   InspectionQuantitativeFault InspectionQuantitativeFault[]
+  @@unique([componentId, part, description])
+}
+
+model Component {
+  id                Int                 @id @default(autoincrement())
+  name              String              @unique
+  QualitativeFault  QualitativeFault[]
+  QuantitativeFault QuantitativeFault[]
 }
 
 enum Result {

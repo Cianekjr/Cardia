@@ -10,6 +10,7 @@ const reset = async prisma => {
   await prisma.quantitativeFault.deleteMany({ where: { id: { not: -1 }}})
   await prisma.engineType.deleteMany({ where: { id: { not: -1 }}})
   await prisma.bodyType.deleteMany({ where: { id: { not: -1 }}})
+  await prisma.component.deleteMany({ where: { id: { not: -1 }}})
 }
 
 export default reset
