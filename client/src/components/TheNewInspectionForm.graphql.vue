@@ -1,7 +1,7 @@
 <script lang="ts">
 import { useQuery, useResult } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { ref, watch } from 'vue'
+import { computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 
 function useApollo () {
@@ -36,15 +36,8 @@ function useApollo () {
     toast.add({ severity: 'error', summary: 'Błąd!', detail: 'Nie udało się załadować modelów pojazdów', life: 4000 })
   })
 
-  const allCarsOptions = ref([])
-
-  const allCars = useResult(allCarsResult, [])
-
-  watch(allCars, () => {
-    if (!allCars.value) {
-      allCarsOptions.value = []
-    }
-    const carsObjects = allCars.value.map(item => ({
+  const allCarsOptions = useResult(allCarsResult, [], (data) => {
+    const carsObjects = data.getAllCars.map(item => ({
       id: item.id,
       make: item.model.make.name,
       model: `${item.model.name} (${item.model.bodyType.name})`,
@@ -78,7 +71,7 @@ function useApollo () {
         sortedCars[index0].models[index1].variants = Array.from(sortedCars[index0].models[index1].variants, ([, value]) => value)
       })
     })
-    allCarsOptions.value = sortedCars
+    return sortedCars
   })
 
   const { result: allComponentsResult, loading: allComponentsLoading, error: allComponentsError, onError: onAllComponentsError } = useQuery(gql`

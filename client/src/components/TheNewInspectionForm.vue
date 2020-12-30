@@ -74,10 +74,7 @@
             <Button
               :label="String(slotProps.item.id)"
               class="p-button-rounded p-jc-center"
-              :class="[
-                (componentsStatus[slotProps.item.id] && componentsStatus[slotProps.item.id].status) || 'p-button-danger',
-                { 'component-active': slotProps.item.id === activeComponent.id }
-              ]"
+              :class="timelineStatusClass(slotProps.item)"
               @click="handleComponentChange(slotProps.item)"
               v-tooltip.top="slotProps.item.name"
             />
@@ -86,7 +83,7 @@
 
         <div class="p-col-12">
           <h2 class="p-d-block p-text-center">{{ activeComponent && activeComponent.name }}</h2>
-          <DataTable :value="chosenQualitativeFaultsByComponent">
+          <DataTable :value="chosenQualitativeFaultsByComponent" class="datatable">
             <template #header>
               <Dropdown v-model="form.qualitativeFault" :options="qualitativeFaultsByComponent" :filter="true" placeholder="Usterki jakościowe" :showClear="true" @change="handleQualitativeFaultChange">
                 <template #option="slotProps">
@@ -142,6 +139,11 @@
                       id="faultValue"
                       aria-describedby="faultValue-help"
                       class="p-d-block"
+                      mode="decimal"
+                      :minFractionDigits="1"
+                      :maxFractionDigits="2"
+                      :class="faultValueClass(slotProps.data)"
+                      v-tooltip.top="faultValueTooltip(slotProps.data)"
                     />
                     <span class="p-inputgroup-addon">{{ slotProps.data.unit }}</span>
                   </div>
@@ -156,30 +158,31 @@
           </DataTable>
         </div>
 
-        <Button label="Dodaj" type="submit" :icon="loading ? 'pi pi-spin pi-spinner' : 'pi pi-check'" iconPos="right" />
+        <Button v-show="areAllComponentsFilled" label="Dodaj" type="submit" :icon="loading ? 'pi pi-spin pi-spinner' : 'pi pi-check'" iconPos="right" />
       </form>
     </template>
   </Card>
 </template>
 
 <script>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, watchEffect } from 'vue'
 import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
 import { useToast } from 'primevue/usetoast'
 import useApollo from '@/components/TheNewInspectionForm.graphql.vue'
-import { useRoute } from 'vue-router'
+import { useRoute, onBeforeRouteLeave } from 'vue-router'
+import { useConfirm } from 'primevue/useConfirm'
 
 export default ({
-  setup: function () {
+  setup () {
     const toast = useToast()
     const route = useRoute()
+    const confirm = useConfirm()
     const {
-      allCarsOptions, allCarsLoading, allCarsError,
+      allCarsOptions: cars, allCarsLoading, allCarsError,
       qualitativeFaults, quantitativeFaults, allFaultsLoading, allFaultsError,
       allComponents, allComponentsLoading
     } = useApollo()
-
     const { handleSubmit, meta } = useForm({
       initialValues: {
         car: null,
@@ -188,17 +191,34 @@ export default ({
       }
     })
 
+    onBeforeRouteLeave((to, from, next) => {
+      confirm.require({
+        message: 'Czy na pewno chcesz wyjść? Utracisz wszystkie dane.',
+        header: 'Potwierdzenie',
+        icon: 'pi pi-exclamation-triangle',
+        accept: () => { next(true) },
+        reject: () => { next(false) }
+      })
+    })
+
+    const allCarsOptions = ref([])
+    watchEffect(() => {
+      allCarsOptions.value = cars.value
+    })
+
     const componentsStatus = ref({})
-    const activeComponent = ref()
+    const activeComponent = ref({})
 
-    const handleComponentChange = (component) => {
-      componentsStatus.value[component.id] = { status: 'p-button-success' }
-      activeComponent.value = component
-    }
-
-    watch(allComponents, () => {
-      activeComponent.value = allComponents.value[0]
-      handleComponentChange(allComponents.value[0])
+    const areAllComponentsFilled = computed(() => {
+      const chosenComponents = Object.values(componentsStatus.value)
+      const isLengthEqual = chosenComponents?.length === allComponents.value?.length
+      let isSuccessStatus = true
+      chosenComponents.forEach(item => {
+        if (item.status !== 'p-button-success') {
+          isSuccessStatus = false
+        }
+      })
+      return isLengthEqual && isSuccessStatus
     })
 
     const form = ref({
@@ -210,22 +230,22 @@ export default ({
     const chosenQualitativeFaults = ref([])
 
     const chosenQualitativeFaultsByComponent = computed(() => {
-      return chosenQualitativeFaults.value?.filter(item => item.component.id === activeComponent.value.id)
+      return chosenQualitativeFaults.value?.filter(item => item?.component?.id === activeComponent.value?.id)
     })
 
     const qualitativeFaultsByComponent = computed(() => {
-      const x = qualitativeFaults.value?.filter(item => item.component.id === activeComponent.value.id)
-      const chosenQualitativeFaultsIds = chosenQualitativeFaults.value?.map(item => { return item.id })
-      return x.filter(item => !chosenQualitativeFaultsIds.includes(item.id))
+      const x = qualitativeFaults.value?.filter(item => item?.component?.id === activeComponent.value?.id)
+      const chosenQualitativeFaultsIds = chosenQualitativeFaults.value?.map(item => { return item?.id })
+      return x.filter(item => !chosenQualitativeFaultsIds?.includes(item?.id))
     })
 
     const handleQualitativeFaultChange = (e) => {
-      chosenQualitativeFaults.value.unshift({ ...e.value, dangerLevel: e.value.dangerLevels[0] })
+      chosenQualitativeFaults.value?.unshift({ ...e.value, dangerLevel: null })
       form.value.qualitativeFault = null
     }
 
     const onQualitativeFaultRemove = (id) => {
-      const removeIndex = chosenQualitativeFaults.value?.findIndex(item => item.id === id)
+      const removeIndex = chosenQualitativeFaults.value?.findIndex(item => item?.id === id)
       chosenQualitativeFaults.value?.splice(removeIndex, 1)
     }
 
@@ -237,19 +257,86 @@ export default ({
     })
 
     const quantitativeFaultsByComponent = computed(() => {
-      const x = quantitativeFaults.value?.filter(item => item.component.id === activeComponent.value?.id)
-      const chosenQuantitativeFaultsIds = chosenQuantitativeFaults.value?.map(item => { return item.id })
-      return x.filter(item => !chosenQuantitativeFaultsIds.includes(item.id))
+      const x = quantitativeFaults.value?.filter(item => item?.component?.id === activeComponent?.value?.id)
+      const chosenQuantitativeFaultsIds = chosenQuantitativeFaults.value?.map(item => { return item?.id })
+      return x.filter(item => !chosenQuantitativeFaultsIds?.includes(item?.id))
     })
 
     const handleQuantitativeFaultChange = (e) => {
-      chosenQuantitativeFaults.value.unshift({ ...e.value, value: null })
+      chosenQuantitativeFaults.value?.unshift({ ...e.value, value: null })
       form.value.quantitativeFault = null
     }
 
     const onQuantitativeFaultRemove = (id) => {
-      const removeIndex = chosenQuantitativeFaults.value?.findIndex(item => item.id === id)
-      chosenQuantitativeFaults.value.splice(removeIndex, 1)
+      const removeIndex = chosenQuantitativeFaults.value?.findIndex(item => item?.id === id)
+      chosenQuantitativeFaults.value?.splice(removeIndex, 1)
+    }
+
+    const faultValueTooltip = (fault) => {
+      let condition
+      if (Number.isFinite(fault.minValue) && !Number.isFinite(fault.maxValue)) {
+        condition = `>${fault.minValue}`
+      } else if (!Number.isFinite(fault.minValue) && Number.isFinite(fault.maxValue)) {
+        condition = `<${fault.maxValue}`
+      } else if (Number.isFinite(fault.minValue) && Number.isFinite(fault.maxValue)) {
+        condition = `${fault.minValue}>x>${fault.maxValue}`
+      }
+
+      if (condition) {
+        return `Prawidłowy przedział ${condition}`
+      }
+    }
+
+    const faultValueClass = (fault) => {
+      if (!Number.isFinite(fault.value)) {
+        return ''
+      }
+
+      const minCorrect = Number.isFinite(fault.minValue) && fault.value >= fault.minValue
+      const maxCorrect = Number.isFinite(fault.maxValue) && fault.value <= fault.maxValue
+
+      if (minCorrect && maxCorrect) {
+        return 'value-success'
+      } else {
+        return 'value-error'
+      }
+    }
+
+    watch([chosenQuantitativeFaults.value, chosenQualitativeFaults.value], () => {
+      Object.keys(componentsStatus.value).forEach(id => {
+        componentsStatus.value[id].status = 'p-button-success'
+      })
+
+      chosenQuantitativeFaults.value.forEach(fault => {
+        if (fault?.value === null) {
+          componentsStatus.value[fault?.component?.id].status = 'p-button-danger'
+        }
+      })
+      chosenQualitativeFaults.value.forEach(fault => {
+        if (fault?.dangerLevel === null) {
+          componentsStatus.value[fault?.component?.id].status = 'p-button-danger'
+        }
+      })
+    })
+
+    const handleComponentChange = (component) => {
+      activeComponent.value = component
+      if (!componentsStatus.value[component.id]?.status) {
+        componentsStatus.value[component.id] = { status: 'p-button-success' }
+      }
+    }
+
+    watchEffect(() => {
+      if (allComponents.value[0]) {
+        activeComponent.value = allComponents.value[0]
+        handleComponentChange(allComponents.value[0])
+      }
+    })
+
+    const timelineStatusClass = (item) => {
+      const status = (componentsStatus.value[item?.id] && componentsStatus.value[item?.id]?.status) || 'p-button-info'
+      const isActive = item?.id === activeComponent.value?.id
+      return [status, { 'component-active': isActive }]
     }
 
     const loading = ref(false)
@@ -261,8 +348,9 @@ export default ({
 
     const onSubmit = handleSubmit(async (values) => {
       try {
-        console.log(route)
-        console.log({ ...values })
+        const qualitativeFaults = chosenQualitativeFaults.value.map(fault => ({ qualitativeFaultId: fault.id, dangerLevel: fault.dangerLevel }))
+        const quantitativeFaults = chosenQuantitativeFaults.value.map(fault => ({ quantitativeFaultId: fault.id, value: fault.value }))
+        console.log({ ...values }, qualitativeFaults, quantitativeFaults)
         toast.add({ severity: 'success', summary: 'Sukces!', detail: 'Dodano nowe badanie techniczne', life: 4000 })
       } catch (e) {
         toast.add({
@@ -316,7 +404,11 @@ export default ({
       form,
       handleComponentChange,
       componentsStatus,
-      activeComponent
+      activeComponent,
+      faultValueTooltip,
+      faultValueClass,
+      areAllComponentsFilled,
+      timelineStatusClass
     }
   }
 })
@@ -335,4 +427,17 @@ export default ({
 .p-selectbutton.p-buttonset {
   width: max-content;
 }
+
+.datatable {
+  background-color: red;
+}
+
+.value-success :deep(.p-inputnumber-input) {
+  color: green;
+}
+
+.value-error :deep(.p-inputnumber-input) {
+  color: red;
+}
+
 </style>

@@ -24,7 +24,7 @@ app.use(
 
 const cors = {
   credentials: true,
-  origin: ["http://localhost:8080", "http://client:8080"]
+  origin: ["http://localhost:8080", "http://localhost:8081", "http://client:8080"]
 };
 
 const apollo = new ApolloServer({

@@ -80,7 +80,7 @@ const typeDefs = gql`
 	}
 
 	type QualitativeFault {
-		id: ID!
+		id: Int!
 		component: Component!
 		componentId: Int!
 		part: String!

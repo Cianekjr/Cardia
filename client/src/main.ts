@@ -34,6 +34,8 @@ import Column from 'primevue/column'
 import Steps from 'primevue/steps'
 import Timeline from 'primevue/timeline'
 import Badge from 'primevue/badge'
+import ConfirmationService from 'primevue/confirmationservice'
+import ConfirmDialog from 'primevue/confirmdialog'
 
 const app = createApp(App as never)
 app.component('InputText', InputText)
@@ -55,6 +57,7 @@ app.component('Column', Column)
 app.component('Steps', Steps)
 app.component('Timeline', Timeline)
 app.component('Badge', Badge)
+app.component('ConfirmDialog', ConfirmDialog)
 
 app.directive('tooltip', Tooltip)
 
@@ -64,5 +67,6 @@ app
   .use(router)
   .use(PrimeVue)
   .use(ToastService)
+  .use(ConfirmationService as never)
   .mount('#app')
 app.config.globalProperties.$primevue = { ripple: true, config: { locale } }

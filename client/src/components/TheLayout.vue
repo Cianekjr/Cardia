@@ -13,6 +13,7 @@
     <slot />
   </main>
   <Toast position="bottom-right" />
+  <ConfirmDialog />
 </template>
 
 <script lang="ts">
@@ -54,8 +55,8 @@ export default ({
     }
 
     const topbarItems = computed(() => [
-      { label: 'Zaloguj', icon: 'pi pi-fw pi-sign-in', to: '/login', visible: !isAuth.value },
-      { label: 'Zarejestruj', icon: 'pi pi-fw pi-user-plus', to: '/register', visible: !isAuth.value },
+      { label: 'Zaloguj', icon: 'pi pi-fw pi-sign-in', to: { name: 'Login' }, visible: !isAuth.value },
+      { label: 'Zarejestruj', icon: 'pi pi-fw pi-user-plus', to: { name: 'Register' }, visible: !isAuth.value },
       { label: 'Wyloguj', icon: `pi pi-fw ${loading.value ? 'pi-spin pi-spinner' : 'pi-sign-out'}`, visible: isAuth.value, command: logoutFn }
     ])
 
