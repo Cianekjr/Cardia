@@ -36,6 +36,9 @@ import Timeline from 'primevue/timeline'
 import Badge from 'primevue/badge'
 import ConfirmationService from 'primevue/confirmationservice'
 import ConfirmDialog from 'primevue/confirmdialog'
+import Chart from 'primevue/chart'
+import Fieldset from 'primevue/fieldset'
+import RadioButton from 'primevue/radiobutton'
 
 const app = createApp(App as never)
 app.component('InputText', InputText)
@@ -58,6 +61,9 @@ app.component('Steps', Steps)
 app.component('Timeline', Timeline)
 app.component('Badge', Badge)
 app.component('ConfirmDialog', ConfirmDialog)
+app.component('Chart', Chart)
+app.component('Fieldset', Fieldset)
+app.component('RadioButton', RadioButton)
 
 app.directive('tooltip', Tooltip)
 

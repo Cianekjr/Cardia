@@ -9,7 +9,7 @@
       <Menu :model="sidebarItems" @click.stop="isMinTablet && toggleMenu"></Menu>
     </aside>
   </div>
-  <main class="p-d-flex p-jc-center p-ai-center layout-content p-p-3" :class="{ active: isMenuOpen }">
+  <main class="p-d-flex p-jc-center layout-content p-p-3" :class="{ active: isMenuOpen }">
     <slot />
   </main>
   <Toast position="bottom-right" />
@@ -139,7 +139,7 @@ export default ({
 .layout-content {
   margin-left: 0;
   margin-top: 70px;
-  min-height: 100vh;
+  min-height: calc(100vh - 70px);
   transition: margin-left .4s cubic-bezier(.05,.74,.2,.99);
 
   @media screen and (min-width: 768px) {

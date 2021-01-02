@@ -535,7 +535,7 @@ export const quantitativeFaults = [
 ]
 
 export const components = [
-  'Identyfikacja pojazdu',
+  // 'Identyfikacja pojazdu',
   'Dodatkowe wyposażenie pojazdu',
   'Ogumienie',
   'Światła',
@@ -545,7 +545,7 @@ export const components = [
   'Instalacja elektryczna',
   'Nadwozie i osprzęt',
   'Zagadnienia związane z ochroną środowiska',
-  'Warunki dodatkowe',
+  // 'Warunki dodatkowe',
 ]
 
 export const engineTypes = ['Diesel', 'Benzyna', 'Elektryczny', 'Hybryda']

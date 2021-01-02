@@ -77,6 +77,170 @@ const resolvers = {
 
       return await ctx.prisma.component.findMany()
     },
+    getAnalyticsFilters: async (_parent, args, ctx) => {
+      const bodyTypes = await ctx.prisma.bodyType.findMany()
+      const makes = await ctx.prisma.make.findMany()
+      const models = await ctx.prisma.model.findMany({
+        include: {
+          make: true,
+          bodyType: true,
+        }
+      })
+      const engineTypes = await ctx.prisma.engineType.findMany()
+
+      return { bodyTypes, makes, models, engineTypes }
+    },
+    getAnalyticsData: async (_parent, { input }, ctx) => {
+      const {
+        makeId1, bodyTypeId1, modelId1, engineTypeId1,
+        makeId2, bodyTypeId2, modelId2, engineTypeId2,
+        createdAtMin, createdAtMax,
+        mileageMin, mileageMax,
+        ageMin, ageMax,
+        engineCapacityMin, engineCapacityMax,
+        enginePowerMin, enginePowerMax
+      } = input || {}
+
+      const resultData = {
+        allInspectionsCount: [],
+        allStationsCount: [],
+        inspectionResultsData: []
+      }
+
+      const inspections1 = await ctx.prisma.inspection.findMany({
+        include: {
+          station: true,
+          car: {
+            include: {
+              model: {
+                include: {
+                  make: true,
+                  bodyType: true
+                },
+              },
+              engineType: true
+            },
+          },
+          inspectionQualitativeFaults: {
+            include: {
+              qualitativeFault: {
+                include: {
+                  component: true,
+                }
+              },
+            },
+          },
+          inspectionQuantitativeFaults: {
+            include: {
+              quantitativeFault: {
+                include: {
+                  component: true,
+                }
+              },
+            },
+          },
+        },
+        where: {
+          createdAt: { gte: createdAtMin, lte: createdAtMax },
+          car: {
+            model: {
+              id: modelId1,
+              make: { id: makeId1 },
+              bodyType: { id: bodyTypeId1 }
+            },
+            engineType: { id: engineTypeId1 },
+            engineCapacity: { gte: engineCapacityMin, lte: engineCapacityMax },
+            enginePower: { gte: enginePowerMin, lte: enginePowerMax },
+          },
+          mileage: { gte: mileageMin, lte: mileageMax },
+          age: { gte: ageMin, lte: ageMax },
+        }
+      })
+
+      resultData.allInspectionsCount.push(inspections1.length)
+      resultData.allStationsCount.push(new Set(inspections1.map(x => x.station.id)).size)
+      const positiveCount = inspections1.filter(x => x.result === 'POSITIVE').length
+      resultData.inspectionResultsData.push([Math.round(positiveCount * 100 / inspections1.length),  Math.round((inspections1.length - positiveCount) * 100 / inspections1.length)])
+
+
+      console.log(resultData, positiveCount)
+
+      if (makeId2 || bodyTypeId2 || modelId2 || engineTypeId2) {
+        const inspections2 = await ctx.prisma.inspection.findMany({
+          include: {
+            station: true,
+            car: {
+              include: {
+                model: {
+                  include: {
+                    make: true,
+                    bodyType: true
+                  },
+                },
+                engineType: true
+              },
+            },
+            inspectionQualitativeFaults: {
+              include: {
+                qualitativeFault: {
+                  include: {
+                    component: true,
+                  }
+                },
+              },
+            },
+            inspectionQuantitativeFaults: {
+              include: {
+                quantitativeFault: {
+                  include: {
+                    component: true,
+                  }
+                },
+              },
+            },
+          },
+          where: {
+            createdAt: {
+              gte: createdAtMin,
+              lte: createdAtMax,
+            },
+            car: {
+              model: {
+                id: modelId2,
+                make: {
+                  id: makeId2,
+                },
+                bodyType: {
+                  id: bodyTypeId2,
+                }
+              },
+              engineType: {
+                id: engineTypeId2
+              },
+              engineCapacity: {
+                gte: engineCapacityMin,
+                lte: engineCapacityMax,
+              },
+              enginePower: {
+                gte: enginePowerMin,
+                lte: enginePowerMax,
+              },
+            },
+            mileage: {
+              gte: mileageMin,
+              lte: mileageMax,
+            },
+            age: {
+              gte: ageMin,
+              lte: ageMax,
+            },
+          }
+        })
+
+      }
+
+      return resultData
+    },
   },
   Mutation: {
     signUp: async (_parent, { input: { email, password, name } }, ctx) => {
@@ -144,12 +308,23 @@ const resolvers = {
       return true
     },
     createInspection: async (_parent, {
-      input: { carId, mileage, age, inspectionQualitativeFaults, inspectionQuantitativeFaults, result }
+      input: { carId, mileage, age, inspectionQualitativeFaults, inspectionQuantitativeFaults }
       }, ctx) => {
       const stationId = ctx.req.session?.station?.id
       if (!stationId) {
         throw new AuthenticationError('Permission denied')
       }
+
+      const quantitativeFaults = await ctx.prisma.quantitativeFault.findMany()
+
+      const negativeQualitativeFaultsCount = inspectionQualitativeFaults.filter(x => ['SIGNIFICANT', 'MAJOR'].includes(x.dangerLevel)).length
+      const negativeQuantitativeFaultsCount = inspectionQuantitativeFaults.filter(x => {
+        const item = quantitativeFaults.find(item => item.id === x.quantitativeFaultId)
+        if (!item) return true
+        const minValueCondition = Number.isFinite(item.minValue) ? x.value >= item.minValue : true
+        const maxValueCondition = Number.isFinite(item.maxValue) ? x.value <= item.maxValue : true
+        return !(minValueCondition && maxValueCondition)
+      }).length
 
       const inspection = await ctx.prisma.inspection.create({
         data: {
@@ -167,7 +342,7 @@ const resolvers = {
               return { quantitativeFault: { connect: { id: quantitativeFaultId } }, value }
             })
           },
-          result: 'NEGATIVE'
+          result: negativeQualitativeFaultsCount || negativeQuantitativeFaultsCount ? 'NEGATIVE' : 'POSITIVE'
         },
         include: {
           station: true,
@@ -182,12 +357,20 @@ const resolvers = {
           },
           inspectionQualitativeFaults: {
             include: {
-              qualitativeFault: true,
+              qualitativeFault: {
+                include: {
+                  component: true,
+                }
+              },
             },
           },
           inspectionQuantitativeFaults: {
             include: {
-              quantitativeFault: true,
+              quantitativeFault: {
+                include: {
+                  component: true,
+                }
+              },
             },
           },
         },

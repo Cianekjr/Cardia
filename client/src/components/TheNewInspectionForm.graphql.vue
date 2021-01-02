@@ -1,7 +1,6 @@
 <script lang="ts">
-import { useQuery, useResult } from '@vue/apollo-composable'
+import { useMutation, useQuery, useResult } from '@vue/apollo-composable'
 import gql from 'graphql-tag'
-import { computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 
 function useApollo () {
@@ -126,6 +125,61 @@ function useApollo () {
 
   const quantitativeFaults = useResult(getAllFaults, [], data => data?.getAllFaults?.quantitativeFaults)
 
+  const { mutate: createInspection, loading: createInspectionLoading } = useMutation(gql`
+    mutation createInspection ($input: CreateInspectionInput!) {
+      createInspection (input: $input) {
+        id
+        createdAt
+        updatedAt
+        station {
+          id
+          name
+        }
+        car {
+          id
+          model {
+            id
+            make {
+              id
+              name
+            }
+            name
+          }
+        }
+        mileage
+        age
+        result
+        inspectionQualitativeFaults {
+          qualitativeFault {
+            id
+            component {
+              id
+              name
+            }
+            part
+            description
+          }
+          dangerLevel
+        }
+        inspectionQuantitativeFaults {
+          quantitativeFault {
+            id
+            component {
+              id
+              name
+            }
+            part
+            description
+            minValue
+            maxValue
+            unit
+          }
+          value
+        }
+      }
+    }
+  `)
+
   return {
     allCarsOptions,
     allCarsLoading,
@@ -135,7 +189,9 @@ function useApollo () {
     allFaultsLoading,
     allFaultsError,
     allComponents,
-    allComponentsLoading
+    allComponentsLoading,
+    createInspection,
+    createInspectionLoading
   }
 }
 

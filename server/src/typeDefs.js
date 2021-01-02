@@ -143,6 +143,44 @@ const typeDefs = gql`
 		quantitativeFaults: [QuantitativeFault!]!
   }
   
+  type AnalyticsFilter {
+    bodyTypes: [BodyType!]!
+    makes: [Make!]!
+    models: [Model!]!
+    engineTypes: [EngineType!]!
+  }
+  
+  type AnalyticsData {
+    allInspectionsCount: [Int!]!
+		allStationsCount: [Int!]!
+		inspectionResultsData: [[Int!]!]!
+  }
+  
+  input AnalyticsDataInput {
+		makeId1: Int
+		bodyTypeId1: Int
+		modelId1: Int
+		engineTypeId1: Int
+
+		makeId2: Int
+		bodyTypeId2: Int
+		modelId2: Int
+		engineTypeId2: Int
+    
+		createdAtMin: DateTime
+    createdAtMax: DateTime
+  
+    mileageMin: Int
+    mileageMax: Int
+    ageMin: Int
+    ageMax: Int
+    
+    engineCapacityMin: Int
+    engineCapacityMax: Int
+    enginePowerMin: Int
+    enginePowerMax: Int
+  }
+  
   input CreateInspectionInput {
 		carId: Int!
 		mileage: Int!
@@ -157,6 +195,8 @@ const typeDefs = gql`
     getAllCars: [Car!]!
     getAllFaults: Faults!
 		getAllComponents: [Component!]!
+    getAnalyticsData(input: AnalyticsDataInput): AnalyticsData!
+		getAnalyticsFilters: AnalyticsFilter!
   }
 
 	type Mutation {

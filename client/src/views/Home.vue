@@ -1,12 +1,14 @@
 <template>
-  <div class="home">
-    HOME
-  </div>
+  <TheAnalytics />
 </template>
 
-<script lang="ts">
+<script>
+import TheAnalytics from '@/components/TheAnalytics.vue'
 
 export default ({
-  name: 'Home'
+  name: 'Home',
+  components: {
+    TheAnalytics
+  }
 })
 </script>

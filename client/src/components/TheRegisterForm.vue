@@ -1,5 +1,5 @@
 <template>
-  <Card class="p-col-10 p-sm-8 p-lg-6 p-xl-4">
+  <Card class="p-as-center p-col-10 p-sm-8 p-lg-6 p-xl-4">
     <template #title>
       <h1 class="login-title p-text-center p-d-block">Zarejestruj się!</h1>
     </template>

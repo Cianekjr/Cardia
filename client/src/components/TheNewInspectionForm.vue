@@ -10,13 +10,13 @@
             <label for="car">Model pojazdu</label>
             <CascadeSelect
               id="car"
-              v-model="car"
+              v-model="carId"
               :options="allCarsOptions"
               optionLabel="displayName"
               optionValue="id"
               optionGroupLabel="name"
               :optionGroupChildren="['models', 'variants']"
-              :class="carError ? 'p-invalid' : ''"
+              :class="carIdError ? 'p-invalid' : ''"
               aria-describedby="car-help"
               :disabled="allCarsLoading || allCarsError"
             >
@@ -26,7 +26,7 @@
                 </div>
               </template>
             </CascadeSelect>
-              <small v-if="carError" id="car-help" class="p-invalid">{{ carError }}</small>
+            <small v-if="carIdError" id="car-help" class="p-invalid">{{ carIdError }}</small>
           </div>
         </div>
         <div class="p-field p-col-4 p-fluid">
@@ -72,7 +72,7 @@
         >
           <template #marker="slotProps">
             <Button
-              :label="String(slotProps.item.id)"
+              :label="String(slotProps.index + 1)"
               class="p-button-rounded p-jc-center"
               :class="timelineStatusClass(slotProps.item)"
               @click="handleComponentChange(slotProps.item)"
@@ -111,7 +111,7 @@
             </Column>
             <Column>
               <template #body="slotProps">
-                <Button icon="pi pi-times" class="p-button-rounded p-button-danger" @click="onQualitativeFaultRemove(slotProps.data.id)"/>
+                <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="onQualitativeFaultRemove(slotProps.data.id)"/>
               </template>
             </Column>
           </DataTable>
@@ -152,13 +152,13 @@
             </Column>
             <Column>
               <template #body="slotProps">
-                <Button icon="pi pi-times" class="p-button-rounded p-button-danger" @click="onQuantitativeFaultRemove(slotProps.data.id)"/>
+                <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="onQuantitativeFaultRemove(slotProps.data.id)"/>
               </template>
             </Column>
           </DataTable>
         </div>
 
-        <Button v-show="areAllComponentsFilled" label="Dodaj" type="submit" :icon="loading ? 'pi pi-spin pi-spinner' : 'pi pi-check'" iconPos="right" />
+        <Button :disabled="!meta.valid || !areAllComponentsFilled" label="Dodaj" type="submit" :icon="createInspectionLoading ? 'pi pi-spin pi-spinner' : 'pi pi-check'" iconPos="right" />
       </form>
     </template>
   </Card>
@@ -170,35 +170,42 @@ import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
 import { useToast } from 'primevue/usetoast'
 import useApollo from '@/components/TheNewInspectionForm.graphql.vue'
-import { useRoute, onBeforeRouteLeave } from 'vue-router'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useConfirm } from 'primevue/useConfirm'
+import { differenceInMonths } from 'date-fns'
 
 export default ({
   setup () {
     const toast = useToast()
-    const route = useRoute()
     const confirm = useConfirm()
+    const { push } = useRouter()
     const {
       allCarsOptions: cars, allCarsLoading, allCarsError,
       qualitativeFaults, quantitativeFaults, allFaultsLoading, allFaultsError,
-      allComponents, allComponentsLoading
+      allComponents, allComponentsLoading,
+      createInspection, createInspectionLoading
     } = useApollo()
     const { handleSubmit, meta } = useForm({
       initialValues: {
-        car: null,
+        carId: null,
         mileage: null,
         firstRegistrationDate: ''
       }
     })
+    const isIspectionCreated = ref(false)
 
     onBeforeRouteLeave((to, from, next) => {
-      confirm.require({
-        message: 'Czy na pewno chcesz wyjść? Utracisz wszystkie dane.',
-        header: 'Potwierdzenie',
-        icon: 'pi pi-exclamation-triangle',
-        accept: () => { next(true) },
-        reject: () => { next(false) }
-      })
+      if (isIspectionCreated.value) {
+        next(true)
+      } else {
+        confirm.require({
+          message: 'Czy na pewno chcesz wyjść? Utracisz wszystkie dane.',
+          header: 'Potwierdzenie',
+          icon: 'pi pi-exclamation-triangle',
+          accept: () => { next(true) },
+          reject: () => { next(false) }
+        })
+      }
     })
 
     const allCarsOptions = ref([])
@@ -339,19 +346,33 @@ export default ({
       return [status, { 'component-active': isActive }]
     }
 
-    const loading = ref(false)
-
-    const messageText = ref('')
-    const { value: car, errorMessage: carError } = useField('car', yup.number().required())
+    const { value: carId, errorMessage: carIdError } = useField('carId', yup.number().required())
     const { value: mileage, errorMessage: mileageError } = useField('mileage', yup.mixed().required())
     const { value: firstRegistrationDate, errorMessage: firstRegistrationDateError } = useField('firstRegistrationDate', yup.string().required())
 
     const onSubmit = handleSubmit(async (values) => {
       try {
-        const qualitativeFaults = chosenQualitativeFaults.value.map(fault => ({ qualitativeFaultId: fault.id, dangerLevel: fault.dangerLevel }))
-        const quantitativeFaults = chosenQuantitativeFaults.value.map(fault => ({ quantitativeFaultId: fault.id, value: fault.value }))
-        console.log({ ...values }, qualitativeFaults, quantitativeFaults)
-        toast.add({ severity: 'success', summary: 'Sukces!', detail: 'Dodano nowe badanie techniczne', life: 4000 })
+        const inspectionQualitativeFaults = chosenQualitativeFaults.value.map(fault => ({ qualitativeFaultId: fault.id, dangerLevel: fault.dangerLevel }))
+        const inspectionQuantitativeFaults = chosenQuantitativeFaults.value.map(fault => ({ quantitativeFaultId: fault.id, value: fault.value }))
+
+        const { carId, mileage, firstRegistrationDate } = values
+        const age = differenceInMonths(new Date(), firstRegistrationDate) + 1
+        const inspection = await createInspection({
+          input: {
+            carId, mileage, age, inspectionQualitativeFaults, inspectionQuantitativeFaults
+          }
+        })
+
+        isIspectionCreated.value = true
+        const isInspectionPositive = inspection?.data?.createInspection?.result === 'POSITIVE'
+        await push({ name: 'Home' })
+        confirm.close()
+        toast.add({
+          severity: isInspectionPositive ? 'success' : 'info',
+          summary: 'Dodano!',
+          detail: `Badanie techniczne zakończone wynikiem ${isInspectionPositive ? 'pozytywnym' : 'negatywnym'}`,
+          life: 4000
+        })
       } catch (e) {
         toast.add({
           severity: 'error',
@@ -371,8 +392,8 @@ export default ({
     })
 
     return {
-      car,
-      carError,
+      carId,
+      carIdError,
       allCarsOptions,
       allCarsLoading,
       allCarsError,
@@ -398,8 +419,6 @@ export default ({
       firstRegistrationDateError,
       onSubmit,
       meta,
-      loading,
-      messageText,
       dangerLevels,
       form,
       handleComponentChange,
@@ -408,7 +427,8 @@ export default ({
       faultValueTooltip,
       faultValueClass,
       areAllComponentsFilled,
-      timelineStatusClass
+      timelineStatusClass,
+      createInspectionLoading
     }
   }
 })
