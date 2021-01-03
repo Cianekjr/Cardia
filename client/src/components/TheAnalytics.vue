@@ -25,13 +25,7 @@ export default ({
     }
 
     watch(filtersData, () => {
-      console.log('REFETCH')
-      const { filterType, filterMin, filterMax, ...data } = filtersData.value || {}
-      if (filterType === 'mileage') {
-        refetchAnalyticsData({ input: { ...data, mileageMin: filterMin, mileageMax: filterMax } })
-      } else if (filterType === 'age') {
-        refetchAnalyticsData({ input: { ...data, ageMin: filterMin, ageMax: filterMax } })
-      }
+      refetchAnalyticsData({ input: filtersData.value })
     })
     return {
       updateFiltersData,

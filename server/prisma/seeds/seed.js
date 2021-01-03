@@ -156,7 +156,7 @@ const seed = async () => {
             return { quantitativeFault: { connect: { id: fault.id } }, value: getRandomInt(0, 100) }
           })
         },
-        result: 'NEGATIVE'
+        result: getRandomArg(['NEGATIVE', 'POSITIVE'])
       },
     })
   }

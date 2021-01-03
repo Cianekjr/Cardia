@@ -102,9 +102,32 @@ const resolvers = {
       } = input || {}
 
       const resultData = {
-        allInspectionsCount: [],
-        allStationsCount: [],
-        inspectionResultsData: []
+        allInspectionsCount1: null,
+        allInspectionsCount2: null,
+        allStationsCount1: null,
+        allStationsCount2: null,
+        inspectionResultsData1: null,
+        inspectionResultsData2: null,
+        componentsFaultsData1: null,
+        componentsFaultsData2: null,
+        commonQualitativeFaults1: null,
+        commonQuantitativeFaults: null,
+      }
+
+      const inspections1Filters = {
+        createdAt: { gte: createdAtMin, lte: createdAtMax },
+        car: {
+          model: {
+            id: modelId1,
+            make: { id: makeId1 },
+            bodyType: { id: bodyTypeId1 }
+          },
+          engineType: { id: engineTypeId1 },
+          engineCapacity: { gte: engineCapacityMin, lte: engineCapacityMax },
+          enginePower: { gte: enginePowerMin, lte: enginePowerMax },
+        },
+        mileage: { gte: mileageMin, lte: mileageMax },
+        age: { gte: ageMin, lte: ageMax },
       }
 
       const inspections1 = await ctx.prisma.inspection.findMany({
@@ -112,132 +135,184 @@ const resolvers = {
           station: true,
           car: {
             include: {
-              model: {
-                include: {
-                  make: true,
-                  bodyType: true
-                },
-              },
+              model: { include: { make: true, bodyType: true } },
               engineType: true
             },
           },
-          inspectionQualitativeFaults: {
-            include: {
-              qualitativeFault: {
-                include: {
-                  component: true,
-                }
-              },
-            },
-          },
-          inspectionQuantitativeFaults: {
-            include: {
-              quantitativeFault: {
-                include: {
-                  component: true,
-                }
-              },
-            },
-          },
         },
-        where: {
-          createdAt: { gte: createdAtMin, lte: createdAtMax },
-          car: {
-            model: {
-              id: modelId1,
-              make: { id: makeId1 },
-              bodyType: { id: bodyTypeId1 }
-            },
-            engineType: { id: engineTypeId1 },
-            engineCapacity: { gte: engineCapacityMin, lte: engineCapacityMax },
-            enginePower: { gte: enginePowerMin, lte: enginePowerMax },
-          },
-          mileage: { gte: mileageMin, lte: mileageMax },
-          age: { gte: ageMin, lte: ageMax },
-        }
+        where: inspections1Filters
       })
 
-      resultData.allInspectionsCount.push(inspections1.length)
-      resultData.allStationsCount.push(new Set(inspections1.map(x => x.station.id)).size)
+      resultData.allInspectionsCount1 = inspections1.length
+      resultData.allStationsCount1 = new Set(inspections1.map(x => x.station.id)).size
+
       const positiveCount = inspections1.filter(x => x.result === 'POSITIVE').length
-      resultData.inspectionResultsData.push([Math.round(positiveCount * 100 / inspections1.length),  Math.round((inspections1.length - positiveCount) * 100 / inspections1.length)])
+      resultData.inspectionResultsData1 = [Math.round(positiveCount * 100 / inspections1.length),  Math.round((inspections1.length - positiveCount) * 100 / inspections1.length)]
 
+      const inspectionQuantitativeFaults = await ctx.prisma.inspectionQuantitativeFault.findMany({
+        include: { quantitativeFault: { include: { component: true } } },
+        where: { inspection: inspections1Filters }
+      })
 
-      console.log(resultData, positiveCount)
+      const inspectionQualitativeFaults = await ctx.prisma.inspectionQualitativeFault.findMany({
+        include: { qualitativeFault: { include: { component: true } } },
+        where: { inspection: inspections1Filters }
+      })
 
-      if (makeId2 || bodyTypeId2 || modelId2 || engineTypeId2) {
-        const inspections2 = await ctx.prisma.inspection.findMany({
-          include: {
-            station: true,
-            car: {
-              include: {
-                model: {
-                  include: {
-                    make: true,
-                    bodyType: true
-                  },
-                },
-                engineType: true
-              },
-            },
-            inspectionQualitativeFaults: {
-              include: {
-                qualitativeFault: {
-                  include: {
-                    component: true,
-                  }
-                },
-              },
-            },
-            inspectionQuantitativeFaults: {
-              include: {
-                quantitativeFault: {
-                  include: {
-                    component: true,
-                  }
-                },
-              },
-            },
-          },
-          where: {
-            createdAt: {
-              gte: createdAtMin,
-              lte: createdAtMax,
-            },
-            car: {
-              model: {
-                id: modelId2,
-                make: {
-                  id: makeId2,
-                },
-                bodyType: {
-                  id: bodyTypeId2,
-                }
-              },
-              engineType: {
-                id: engineTypeId2
-              },
-              engineCapacity: {
-                gte: engineCapacityMin,
-                lte: engineCapacityMax,
-              },
-              enginePower: {
-                gte: enginePowerMin,
-                lte: enginePowerMax,
-              },
-            },
-            mileage: {
-              gte: mileageMin,
-              lte: mileageMax,
-            },
-            age: {
-              gte: ageMin,
-              lte: ageMax,
-            },
+      const components = await ctx.prisma.component.findMany()
+      const qualitativeFaults = await ctx.prisma.qualitativeFault.findMany()
+      const quantitativeFaults = await ctx.prisma.quantitativeFault.findMany()
+
+      const stackedComponentsFaults = {}
+
+      components.forEach(component => {
+        stackedComponentsFaults[component.name] = 0
+      })
+
+      const commonQualitativeFaults = {}
+      const commonQuantitativeFaults = {}
+
+      inspectionQuantitativeFaults.concat(inspectionQualitativeFaults).forEach(fault => {
+        const qualitativeComponentName = fault.qualitativeFault && fault.qualitativeFault.component.name
+        const quantitativeComponentName = fault.quantitativeFault && fault.quantitativeFault.component.name
+        if (qualitativeComponentName) {
+          const id = fault.qualitativeFault.id
+          if (commonQualitativeFaults[id]) {
+            commonQualitativeFaults[id]++
+          } else {
+            commonQualitativeFaults[id] = 1
           }
-        })
+        } else if (quantitativeComponentName) {
+          const id = fault.quantitativeFault.id
+          if (commonQuantitativeFaults[id]) {
+            commonQuantitativeFaults[id]++
+          } else {
+            commonQuantitativeFaults[id] = 1
+          }
+        }
+        stackedComponentsFaults[quantitativeComponentName || qualitativeComponentName]++
+      })
 
+      const mostCommonQualitativeFaults = Object.entries(commonQualitativeFaults).sort((a, b) => b[1] - a[1]).slice(0, 2).map(item => qualitativeFaults.find(fault => fault.id === Number(item[0])))
+      const mostCommonQuantitativeFaults = Object.entries(commonQuantitativeFaults).sort((a, b) => b[1] - a[1]).slice(0, 2).map(item => quantitativeFaults.find(fault => fault.id === Number(item[0])))
+
+      resultData.commonQualitativeFaults1 = mostCommonQualitativeFaults
+      resultData.commonQuantitativeFaults1 = mostCommonQuantitativeFaults
+
+      // const stackedComponentsFaults = {}
+      // inspections1.forEach(inspection => {
+      //   inspection.inspectionQualitativeFaults.forEach(fault => {
+      //     if (stackedComponentsFaults[fault.qualitativeFault.component.name]) {
+      //       stackedComponentsFaults[fault.qualitativeFault.component.name]++
+      //     } else {
+      //       stackedComponentsFaults[fault.qualitativeFault.component.name] = 1
+      //     }
+      //   })
+      //
+      //   inspection.inspectionQuantitativeFaults.forEach(fault => {
+      //     if (stackedComponentsFaults[fault.quantitativeFault.component.name]) {
+      //       stackedComponentsFaults[fault.quantitativeFault.component.name]++
+      //     } else {
+      //       stackedComponentsFaults[fault.quantitativeFault.component.name] = 1
+      //     }
+      //   })
+      // })
+      //
+      resultData.componentsFaultsData1 = {
+        keys: Object.keys(stackedComponentsFaults),
+        values: Object.values(stackedComponentsFaults),
       }
+
+
+
+      // const mileage = Number.isFinite(mileageMin) && Number.isFinite(mileageMax)
+      // const age = Number.isFinite(ageMin) && Number.isFinite(ageMax)
+      // if (mileage || age) {
+      //   inspections1.
+      // }
+
+      // if (makeId2 || bodyTypeId2 || modelId2 || engineTypeId2) {
+      //   const inspections2 = await ctx.prisma.inspection.findMany({
+      //     include: {
+      //       station: true,
+      //       car: {
+      //         include: {
+      //           model: {
+      //             include: {
+      //               make: true,
+      //               bodyType: true
+      //             },
+      //           },
+      //           engineType: true
+      //         },
+      //       },
+      //       inspectionQualitativeFaults: {
+      //         include: {
+      //           qualitativeFault: {
+      //             include: {
+      //               component: true,
+      //             }
+      //           },
+      //         },
+      //       },
+      //       inspectionQuantitativeFaults: {
+      //         include: {
+      //           quantitativeFault: {
+      //             include: {
+      //               component: true,
+      //             }
+      //           },
+      //         },
+      //       },
+      //     },
+      //     where: {
+      //       createdAt: { gte: createdAtMin, lte: createdAtMax },
+      //       car: {
+      //         model: {
+      //           id: modelId2,
+      //           make: { id: makeId2 },
+      //           bodyType: { id: bodyTypeId2 }
+      //         },
+      //         engineType: { id: engineTypeId2 },
+      //         engineCapacity: { gte: engineCapacityMin, lte: engineCapacityMax },
+      //         enginePower: { gte: enginePowerMin, lte: enginePowerMax },
+      //       },
+      //       mileage: { gte: mileageMin, lte: mileageMax },
+      //       age: { gte: ageMin, lte: ageMax },
+      //     }
+      //   })
+      //
+      //   resultData.allInspectionsCount2 = inspections2.length
+      //   resultData.allStationsCount2 = new Set(inspections2.map(x => x.station.id)).size
+      //
+      //   const positiveCount = inspections2.filter(x => x.result === 'POSITIVE').length
+      //   resultData.inspectionResultsData2 = [Math.round(positiveCount * 100 / inspections2.length),  Math.round((inspections2.length - positiveCount) * 100 / inspections2.length)]
+      //
+      //
+      //   const stackedComponentsFaults = {}
+      //   inspections2.forEach(inspection => {
+      //     inspection.inspectionQualitativeFaults.forEach(fault => {
+      //       if (stackedComponentsFaults[fault.qualitativeFault.component.name]) {
+      //         stackedComponentsFaults[fault.qualitativeFault.component.name]++
+      //       } else {
+      //         stackedComponentsFaults[fault.qualitativeFault.component.name] = 1
+      //       }
+      //     })
+      //
+      //     inspection.inspectionQuantitativeFaults.forEach(fault => {
+      //       if (stackedComponentsFaults[fault.quantitativeFault.component.name]) {
+      //         stackedComponentsFaults[fault.quantitativeFault.component.name]++
+      //       } else {
+      //         stackedComponentsFaults[fault.quantitativeFault.component.name] = 1
+      //       }
+      //     })
+      //   })
+      //
+      //   resultData.componentsFaultsData2 = {
+      //     keys: Object.keys(stackedComponentsFaults),
+      //     values: Object.values(stackedComponentsFaults),
+      //   }
+      // }
 
       return resultData
     },

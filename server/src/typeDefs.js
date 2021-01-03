@@ -150,10 +150,24 @@ const typeDefs = gql`
     engineTypes: [EngineType!]!
   }
   
+  type componentsFaultsData {
+    keys: [String!]!
+    values: [Int!]!
+  }
+
   type AnalyticsData {
-    allInspectionsCount: [Int!]!
-		allStationsCount: [Int!]!
-		inspectionResultsData: [[Int!]!]!
+    allInspectionsCount1: Int!
+    allInspectionsCount2: Int
+		allStationsCount1: Int!
+		allStationsCount2: Int
+		inspectionResultsData1: [Int!]!
+		inspectionResultsData2: [Int!]
+		componentsFaultsData1: componentsFaultsData!
+		componentsFaultsData2: componentsFaultsData
+		commonQualitativeFaults1: [QualitativeFault!]!
+		commonQuantitativeFaults1: [QuantitativeFault!]!
+		commonQualitativeFaults2: [QualitativeFault!]
+		commonQuantitativeFaults2: [QuantitativeFault!]
   }
   
   input AnalyticsDataInput {

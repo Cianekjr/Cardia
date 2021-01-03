@@ -9,9 +9,21 @@ function useApollo () {
   const { result: analyticsDataResult, loading: analyticsDataLoading, error: analyticsDataError, onError: onAnalyticsDataError, refetch: refetchAnalyticsData, onResult: onAnalyticsDataResult } = useQuery(gql`
     query getAnalyticsData ($input: AnalyticsDataInput) {
       getAnalyticsData (input: $input) {
-        allInspectionsCount
-        allStationsCount
-        inspectionResultsData
+        allInspectionsCount1
+        allInspectionsCount2
+        allStationsCount1
+        allStationsCount2
+        inspectionResultsData1
+        inspectionResultsData2
+        componentsFaultsData1 {
+          keys
+          values
+        }
+        componentsFaultsData2 {
+          keys
+          values
+        }
+        commonQualitativeFaults1
       }
     }
   `)

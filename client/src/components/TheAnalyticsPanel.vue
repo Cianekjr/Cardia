@@ -13,8 +13,8 @@
             </template>
             <template #content>
               <div class="p-grid p-jc-around">
-                <div class="theme-first">{{ data.allInspectionsCount[0] }}</div>
-                <div class="theme-second" v-if="data.allInspectionsCount[1]">{{ data.allInspectionsCount[1] }}</div>
+                <div class="theme-first p-p-3">{{ data.allInspectionsCount1 }}</div>
+                <div class="theme-second p-p-3" v-if="data.allInspectionsCount2">{{ data.allInspectionsCount2 }}</div>
               </div>
             </template>
           </Card>
@@ -27,8 +27,8 @@
             </template>
             <template #content>
               <div class="p-grid p-jc-around">
-                <div class="theme-first">{{ data.allStationsCount[0] }}</div>
-                <div class="theme-second" v-if="data.allStationsCount[1]">{{ data.allStationsCount[1] }}</div>
+                <div class="theme-first p-p-3">{{ data.allStationsCount1 }}</div>
+                <div class="theme-second p-p-3" v-if="data.allStationsCount2">{{ data.allStationsCount2 }}</div>
               </div>
             </template>
           </Card>
@@ -41,8 +41,12 @@
             </template>
             <template #content>
               <div class="p-grid p-jc-around">
-                <Chart type="doughnut" class="p-col-6" :data="data.inspectionResultsData[0]" :options="data.doughnutOptions"/>
-                <Chart v-if="data.inspectionResultsData[1]" type="doughnut" class="p-col-6" :data="data.inspectionResultsData[1]" :options="data.doughnutOptions"/>
+                <div class="p-col-6">
+                  <Chart type="doughnut" class="theme-first p-p-3" :data="data.inspectionResultsData1" :options="data.doughnutOptions"/>
+                </div>
+                <div v-if="data.inspectionResultsData2" class="p-col-6">
+                  <Chart  type="doughnut" class="theme-second p-p-3" :data="data.inspectionResultsData2" :options="data.doughnutOptions"/>
+                </div>
               </div>
             </template>
           </Card>
@@ -55,8 +59,12 @@
             </template>
             <template #content>
               <div class="p-grid p-jc-around">
-                <Chart type="doughnut" class="p-col-6" :data="data.componentsFaultsData[0]" :options="data.doughnutOptions"/>
-                <Chart v-if="data.componentsFaultsData[1]" type="doughnut" class="p-col-6" :data="data.componentsFaultsData[1]" :options="data.doughnutOptions"/>
+                <div class="p-col-6">
+                  <Chart type="doughnut" class="theme-first p-p-3" :data="data.componentsFaultsData1" :options="data.doughnutOptions"/>
+                </div>
+                <div v-if="data.componentsFaultsData2" class="p-col-6">
+                  <Chart type="doughnut" class="theme-second p-p-3" :data="data.componentsFaultsData2" :options="data.doughnutOptions"/>
+                </div>
               </div>
             </template>
           </Card>
@@ -100,50 +108,35 @@ export default ({
     }
   },
   setup (props) {
+    const backgroundColor = ['#2B7469', '#FF6F80', '#61DDC9', '#FECFCA', '#1C3B36', '#FF9797', '#FFDFB9']
+
     const data = computed(() => ({
-      allInspectionsCount: props.analyticsData?.allInspectionsCount || [],
-      allStationsCount: props.analyticsData?.allStationsCount || [],
-      inspectionResultsData: [
-        {
-          labels: ['Pozytywne', 'Negatywne'],
-          datasets: [
-            {
-              data: props.analyticsData?.inspectionResultsData?.[0] || [],
-              backgroundColor: ['rgba(102, 187, 106, 1)', 'rgba(102, 187, 106, .5)']
-            }
-          ]
-        },
-        props.analyticsData?.inspectionResultsData?.[1] && {
-          labels: ['Pozytywne', 'Negatywne'],
-          datasets: [
-            {
-              data: props.analyticsData?.allStationsCount?.[1] || [],
-              backgroundColor: ['rgba(66, 165, 245, 1)', 'rgba(66, 165, 245, .5)']
-            }
-          ]
-        }
-      ],
-      componentsFaultsData: [
-        {
-          labels: ['Układ hamulcowy', 'Układ kierowniczy', 'Zawieszenie', 'Światła'],
-          datasets: [
-            {
-              data: [20, 50, 20, 10]
-            }
-          ]
-        },
-        {
-          labels: ['Układ hamulcowy', 'Układ kierowniczy', 'Zawieszenie', 'Światła'],
-          datasets: [
-            {
-              data: [15, 35, 25, 25]
-            }
-          ]
-        }
-      ],
+      allInspectionsCount1: props.analyticsData?.allInspectionsCount1,
+      allInspectionsCount2: props.analyticsData?.allInspectionsCount2,
+      allStationsCount1: props.analyticsData?.allStationsCount1,
+      allStationsCount2: props.analyticsData?.allStationsCount2,
+      inspectionResultsData1: {
+        labels: ['Pozytywne', 'Negatywne'],
+        datasets: [{ data: props.analyticsData?.inspectionResultsData1, backgroundColor }]
+      },
+      inspectionResultsData2: props.analyticsData?.inspectionResultsData2 && {
+        labels: ['Pozytywne', 'Negatywne'],
+        datasets: [{ data: props.analyticsData?.inspectionResultsData2, backgroundColor }]
+      },
+      componentsFaultsData1: {
+        labels: props.analyticsData?.componentsFaultsData1?.keys,
+        datasets: [{ data: props.analyticsData?.componentsFaultsData1?.values, backgroundColor }]
+      },
+      componentsFaultsData2: props.analyticsData?.componentsFaultsData2 && {
+        labels: props.analyticsData?.componentsFaultsData2?.keys,
+        datasets: [{ data: props.analyticsData?.componentsFaultsData1?.values, backgroundColor }]
+      },
       doughnutOptions: {
         legend: {
-          position: 'bottom'
+          position: 'bottom',
+          labels: {
+            boxWidth: 20
+          }
         },
         tooltips: {
           callbacks: {
@@ -179,7 +172,6 @@ export default ({
         ]
       },
       faultsDistributionOptions: {
-        aspectRatio: 5,
         tooltips: {
           mode: 'index'
         }
@@ -197,13 +189,8 @@ export default ({
 <style scoped lang="scss">
 .stats-card {
   position: relative;
-  background-color: #eeeeee;
+  background-image: linear-gradient(to right, #dad299, #b0dab9);
   color: black;
-
-  .card-icon {
-    border: 2px solid var(--surface-e);
-    background-color: #eeeeee;
-  }
 }
 
 .stats-card-title {
@@ -221,11 +208,13 @@ export default ({
 }
 
 .theme-first {
-  color: #66BB6A;
+  border: 3px solid #66BB6A;
+  border-radius: 6px;
 }
 
 .theme-second {
-  color: #0080d4;
+  border: 3px solid #0080d4;
+  border-radius: 6px;
 }
 
 .theme-first, .theme-second {

@@ -453,18 +453,6 @@ export const qualitativeFaults = [
     description: 'Brak podświetlenia',
     dangerLevels: ['MINOR', 'SIGNIFICANT'],
   },
-  {
-    component: 'Zagadnienia związane z ochroną środowiska',
-    part: 'Urządzenia kontrolne emisji spalin',
-    description: 'Brak zamontowanego urządzenia kontrolnego emisji spalin, przeróbka urządzenia lub wyraźnie nieprawidłowe działanie',
-    dangerLevels: ['MINOR', 'SIGNIFICANT'],
-  },
-  {
-    component: 'Zagadnienia związane z ochroną środowiska',
-    part: 'Wycieki płynów',
-    description: 'Nadmierny wyciek dowolnego płynu, który może zagrażać środowisku lub bezpieczeństwu innych użytkowników drogi',
-    dangerLevels: ['SIGNIFICANT', 'MAJOR'],
-  },
 ]
 
 export const quantitativeFaults = [
@@ -544,7 +532,7 @@ export const components = [
   'Podwozie, zawieszenie i inne',
   'Instalacja elektryczna',
   'Nadwozie i osprzęt',
-  'Zagadnienia związane z ochroną środowiska',
+  // 'Zagadnienia związane z ochroną środowiska',
   // 'Warunki dodatkowe',
 ]
 

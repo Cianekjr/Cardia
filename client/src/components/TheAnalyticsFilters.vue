@@ -256,7 +256,23 @@ export default ({
     })
 
     const onSubmit = () => {
-      emit('updateFiltersData', formData)
+      const { filterType, filterMin, filterMax, ...data } = formData || {}
+      const normalizedData = { ...data }
+      if (filterType === 'mileage') {
+        normalizedData.mileageMin = filterMin
+        normalizedData.mileageMax = filterMax
+      } else if (filterType === 'age') {
+        normalizedData.ageMin = filterMin
+        normalizedData.ageMax = filterMax
+      }
+
+      for (const [key, value] of Object.entries(normalizedData)) {
+        if (value === null) {
+          normalizedData[key] = undefined
+        }
+      }
+
+      emit('updateFiltersData', normalizedData)
     }
 
     const { value: filterType } = useField('filterType', yup.number())
