@@ -23,7 +23,16 @@ function useApollo () {
           keys
           values
         }
-        commonQualitativeFaults1
+        commonQualitativeFaults1 {
+          id
+          part
+          description
+        }
+        commonQuantitativeFaults1 {
+          id
+          part
+          description
+        }
       }
     }
   `)

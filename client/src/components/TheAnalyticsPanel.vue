@@ -1,7 +1,7 @@
 <template>
   <Card class="p-col-12 p-mb-3">
     <template #header>
-      <h2 class="p-text-center">sadasd</h2>
+      <h2 class="p-text-center"></h2>
     </template>
     <template #content>
       <div class="p-grid p-col-12 p-ai-stretch vertical-container">
@@ -9,11 +9,11 @@
         <div class="p-col-6">
           <Card class="p-col-12 stats-card p-text-center">
             <template #title>
-              <div class="stats-card-title">Wszystkie badania</div>
+              <h3 class="stats-card-title">Wszystkie badania</h3>
             </template>
             <template #content>
-              <div class="p-grid p-jc-around">
-                <div class="theme-first p-p-3">{{ data.allInspectionsCount1 }}</div>
+              <div class="p-grid p-jc-around theme">
+                <div :class="data.allInspectionsCount2 ? 'theme-first p-p-3' : ''">{{ data.allInspectionsCount1 }}</div>
                 <div class="theme-second p-p-3" v-if="data.allInspectionsCount2">{{ data.allInspectionsCount2 }}</div>
               </div>
             </template>
@@ -23,11 +23,11 @@
         <div class="p-col-6">
           <Card class="p-col-12 stats-card p-text-center">
             <template #title>
-              <div class="stats-card-title">Stacje diagnostyczne</div>
+              <h3 class="stats-card-title">Stacje diagnostyczne</h3>
             </template>
             <template #content>
-              <div class="p-grid p-jc-around">
-                <div class="theme-first p-p-3">{{ data.allStationsCount1 }}</div>
+              <div class="p-grid p-jc-around theme">
+                <div :class="data.allStationsCount2 ? 'theme-first p-p-3' : ''">{{ data.allStationsCount1 }}</div>
                 <div class="theme-second p-p-3" v-if="data.allStationsCount2">{{ data.allStationsCount2 }}</div>
               </div>
             </template>
@@ -37,12 +37,12 @@
         <div class="p-col-6 p-d-flex">
           <Card class="p-col-12 stats-card p-text-center">
             <template #title>
-              <div class="stats-card-title">Rezultaty badań</div>
+              <h3 class="stats-card-title">Rezultaty badań</h3>
             </template>
             <template #content>
               <div class="p-grid p-jc-around">
-                <div class="p-col-6">
-                  <Chart type="doughnut" class="theme-first p-p-3" :data="data.inspectionResultsData1" :options="data.doughnutOptions"/>
+                <div :class="data.inspectionResultsData2 ? 'p-col-6' : 'p-col-12'">
+                  <Chart type="doughnut" :class="data.inspectionResultsData2 ? 'theme-first p-p-3' : ''" :data="data.inspectionResultsData1" :options="data.doughnutOptions"/>
                 </div>
                 <div v-if="data.inspectionResultsData2" class="p-col-6">
                   <Chart  type="doughnut" class="theme-second p-p-3" :data="data.inspectionResultsData2" :options="data.doughnutOptions"/>
@@ -55,12 +55,12 @@
         <div class="p-col-6 p-d-flex">
           <Card class="p-col-12 stats-card p-text-center">
             <template #title>
-              <div class="stats-card-title">Uszkodzenia modułów</div>
+              <h3 class="stats-card-title">Uszkodzenia modułów</h3>
             </template>
             <template #content>
               <div class="p-grid p-jc-around">
-                <div class="p-col-6">
-                  <Chart type="doughnut" class="theme-first p-p-3" :data="data.componentsFaultsData1" :options="data.doughnutOptions"/>
+                <div :class="data.componentsFaultsData2 ? 'p-col-6' : 'p-col-12'">
+                  <Chart type="doughnut" :class="data.componentsFaultsData2 ? 'theme-first p-p-3' : ''" :data="data.componentsFaultsData1" :options="data.doughnutOptions"/>
                 </div>
                 <div v-if="data.componentsFaultsData2" class="p-col-6">
                   <Chart type="doughnut" class="theme-second p-p-3" :data="data.componentsFaultsData2" :options="data.doughnutOptions"/>
@@ -73,24 +73,61 @@
         <div class="p-col-12">
           <Card class="p-col-12 stats-card p-text-center">
             <template #title>
-              <div class="stats-card-title">Rozkład uszkodzeń modułów</div>
+              <h3 class="stats-card-title">Rozkład uszkodzeń modułów</h3>
             </template>
             <template #content>
-              <Chart type="line" :data="data.faultsDistributionData" :options="data.faultsDistributionOptions" :width="450"/>
+              <Chart type="scatter" :data="data.faultsDistributionData" :options="data.faultsDistributionOptions" :width="450"/>
             </template>
           </Card>
         </div>
 
-<!--        <div class="p-col-12">-->
-<!--          <Card class="stats-card box">-->
-<!--            <template #title>-->
-<!--              <div>Uszkodzenia modułów</div>-->
-<!--            </template>-->
-<!--            <template #content>-->
-<!--              <Chart type="bar" :data="stackedData" :options="resultsOptions"/>-->
-<!--            </template>-->
-<!--          </Card>-->
-<!--        </div>-->
+        <div class="p-col-6 p-d-flex">
+          <Card class="p-col-12 stats-card p-text-center">
+            <template #title>
+              <h3 class="stats-card-title">Najczęstsze usterki jakościowe</h3>
+            </template>
+            <template #content>
+              <div class="p-grid p-jc-around">
+                <div :class="data.commonQualitativeFaults2 ? 'theme-first p-p-3' : ''">
+                  <div v-for="fault in data.commonQualitativeFaults1" :key="fault.id" class="p-mb-3">
+                    <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
+                    <p class="p-m-0">{{ fault.description}}</p>
+                  </div>
+                </div>
+                <div v-if="data.commonQualitativeFaults2" class="theme-second p-p-3'">
+                  <div v-for="fault in data.commonQualitativeFaults2" :key="fault.id" class="p-mb-3">
+                    <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
+                    <p class="p-m-0">{{ fault.description}}</p>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </Card>
+        </div>
+
+        <div class="p-col-6 p-d-flex">
+          <Card class="p-col-12 stats-card p-text-center">
+            <template #title>
+              <h3 class="stats-card-title">Najczęstsze usterki ilościowe</h3>
+            </template>
+            <template #content>
+              <div class="p-grid p-jc-around">
+                <div :class="data.commonQuantitativeFaults2 ? 'theme-first p-p-3' : ''">
+                  <div v-for="fault in data.commonQuantitativeFaults1" :key="fault.id" class="p-mb-3">
+                    <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
+                    <p class="p-m-0">{{ fault.description }}</p>
+                  </div>
+                </div>
+                <div v-if="data.commonQuantitativeFaults2" class="theme-second p-p-3'">
+                  <div v-for="fault in data.commonQuantitativeFaults2" :key="fault.id" class="p-mb-3">
+                    <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
+                    <p class="p-m-0">{{ fault.description }}</p>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </Card>
+        </div>
 
       </div>
     </template>
@@ -129,7 +166,7 @@ export default ({
       },
       componentsFaultsData2: props.analyticsData?.componentsFaultsData2 && {
         labels: props.analyticsData?.componentsFaultsData2?.keys,
-        datasets: [{ data: props.analyticsData?.componentsFaultsData1?.values, backgroundColor }]
+        datasets: [{ data: props.analyticsData?.componentsFaultsData2?.values, backgroundColor }]
       },
       doughnutOptions: {
         legend: {
@@ -155,27 +192,34 @@ export default ({
         }
       },
       faultsDistributionData: {
-        labels: ['0', '50 tyś km', '100 tyś km', '150 tyś km', '200 tyś km', '250 tyś km', '300 tyś km'],
+        // labels: ['50 tyś km', '120 tyś km', '150 tyś km', '200 tyś km', '250 tyś km', '300 tyś km'],
         datasets: [
           {
             label: 'SUV Audi',
-            data: [0.03, 0.05, 0.2, 0.5, 1.1, 2.6, 3],
+            data: [{ x: 30, y: 40 }, { x: 50, y: 80 }, { x: 70, y: 20 }, { x: 120, y: 0 }],
             fill: false,
-            borderColor: 'rgba(102, 187, 106, 1)'
+            borderColor: '#66BB6A'
           },
           {
             label: 'Coupe Mercedes',
-            data: [0.008, 0.04, 0.17, 0.45, 0.99, 1.9, 2.5],
+            data: [{ x: 30, y: 40 }, { x: 150, y: 80 }, { x: 151, y: 0 }, { x: 151, y: 0 }, { x: 152, y: 80 }, { x: 170, y: 20 }, { x: 220, y: 0 }],
             fill: false,
-            borderColor: 'rgba(66, 165, 245, 1)'
+            borderColor: '#0080d4'
+          },
+          {
+            type: 'line',
+            data: [{ x: 30, y: 20 }, { x: 50, y: 80 }, { x: 70, y: 20 }, { x: 120, y: 0 }],
+            fill: false
           }
         ]
       },
       faultsDistributionOptions: {
-        tooltips: {
-          mode: 'index'
-        }
-      }
+        // tooltips: {
+        //   mode: 'index'
+        // },
+      },
+      commonQualitativeFaults1: props.analyticsData?.commonQualitativeFaults1,
+      commonQuantitativeFaults1: props.analyticsData?.commonQuantitativeFaults1
     }))
 
     return {
@@ -189,12 +233,13 @@ export default ({
 <style scoped lang="scss">
 .stats-card {
   position: relative;
-  background-image: linear-gradient(to right, #dad299, #b0dab9);
-  color: black;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #000;
 }
 
 .stats-card-title {
   font-size: 1.3rem;
+  margin: 0;
 }
 
 .card-icon {
@@ -207,6 +252,11 @@ export default ({
   font-size: 1.5rem;
 }
 
+.theme {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
 .theme-first {
   border: 3px solid #66BB6A;
   border-radius: 6px;
@@ -215,10 +265,5 @@ export default ({
 .theme-second {
   border: 3px solid #0080d4;
   border-radius: 6px;
-}
-
-.theme-first, .theme-second {
-  font-size: 2rem;
-  font-weight: 600;
 }
 </style>

@@ -537,7 +537,7 @@ export const components = [
 ]
 
 export const engineTypes = ['Diesel', 'Benzyna', 'Elektryczny', 'Hybryda']
-export const bodyTypes = ['SUV', 'Limuzyna', 'Sedan']
+export const bodyTypes = ['SUV', 'Limuzyna', 'Sedan', 'Coupe']
 export const cars = [
   {
     make: 'Audi',
@@ -553,6 +553,20 @@ export const cars = [
     models: [
       { name: 'GLA', bodyType: 'SUV' },
       { name: 'GLC', bodyType: 'SUV' },
+    ],
+  },
+  {
+    make: 'Opel',
+    models: [
+      { name: 'Calibra', bodyType: 'Coupe' },
+      { name: 'Vectra', bodyType: 'Sedan' },
+    ],
+  },
+  {
+    make: 'Honda',
+    models: [
+      { name: 'Civic', bodyType: 'Coupe' },
+      { name: 'CR-V', bodyType: 'SUV' },
     ],
   },
 ]

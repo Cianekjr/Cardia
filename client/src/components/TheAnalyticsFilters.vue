@@ -25,6 +25,7 @@
                   <InputNumber
                     v-model="filterMin"
                     id="filterMin"
+                    locale="pl-PL"
                     aria-describedby="filterMin-help"
                     class="p-d-block"
                     :min="0"
@@ -39,6 +40,7 @@
                   <InputNumber
                     v-model="filterMax"
                     id="filterMax"
+                    locale="pl-PL"
                     aria-describedby="filterMax-help"
                     class="p-d-block"
                     :min="filterMin"
@@ -89,6 +91,7 @@
                   <InputNumber
                     v-model="engineCapacityMin"
                     id="engineCapacityMin"
+                    locale="pl-PL"
                     aria-describedby="engineCapacityMin-help"
                     class="p-d-block"
                     :min="0"
@@ -103,6 +106,7 @@
                   <InputNumber
                     v-model="engineCapacityMax"
                     id="engineCapacityMax"
+                    locale="pl-PL"
                     aria-describedby="engineCapacityMax-help"
                     class="p-d-block"
                     :min="engineCapacityMin"
@@ -122,6 +126,7 @@
                   <InputNumber
                     v-model="enginePowerMin"
                     id="enginePowerMin"
+                    locale="pl-PL"
                     aria-describedby="enginePowerMin-help"
                     class="p-d-block"
                     :min="0"
@@ -136,6 +141,7 @@
                   <InputNumber
                     v-model="enginePowerMax"
                     id="enginePowerMax"
+                    locale="pl-PL"
                     aria-describedby="enginePowerMax-help"
                     class="p-d-block"
                     :min="enginePowerMin"
@@ -234,7 +240,6 @@ export default ({
         isCollapsed.value = true
       }, 200)
       window.scrollTo({ top: 0, behavior: 'smooth' })
-      // cardElement.value?.$el.scrollIntoView({ behavior: 'smooth' })
     })
 
     const { handleReset, values: formData } = useForm({

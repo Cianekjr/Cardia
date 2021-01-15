@@ -10,10 +10,14 @@ const prisma = new PrismaClient()
 
 faker.locale = "pl";
 
+const stationSeedCount = 55
+const carsSeedCount = 50
+const inspectionSeedCount = 1000
+
 const seed = async () => {
   await reset(prisma)
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < stationSeedCount; i++) {
     const hashedPassword = await bcrypt.hash(faker.internet.password(), 10);
     await prisma.station.create({
       data: {
@@ -100,7 +104,7 @@ const seed = async () => {
     }))
   }))
 
-  for(let i = 0; i < 20; i++) {
+  for(let i = 0; i < carsSeedCount; i++) {
     const car = getRandomArg(cars)
 
     const make = await prisma.make.findUnique({
@@ -131,7 +135,7 @@ const seed = async () => {
   const qualitativeFaultCount = await prisma.qualitativeFault.count()
   const quantitativeFaultCount = await prisma.quantitativeFault.count()
 
-  for(let i = 0; i < 20; i++) {
+  for(let i = 0; i < inspectionSeedCount; i++) {
     const randomStation = await prisma.station.findMany({ take: 1, skip: getRandomInt(1, stationsCount - 1)})
     const randomCar = await prisma.car.findMany({ take: 1, skip: getRandomInt(1, carsCount - 1)})
     const qualitativeFaultsNeeded = getRandomInt(0, 6)

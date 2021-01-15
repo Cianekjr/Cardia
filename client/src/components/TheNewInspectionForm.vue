@@ -36,6 +36,7 @@
               v-model="mileage"
               id="mileage"
               :min="0"
+              locale="pl-PL"
               aria-describedby="mileage-help"
               :class="mileageError ? 'p-invalid' : ''"
               class="p-d-block"
@@ -50,9 +51,7 @@
             <Calendar
               id="firstRegistrationDate"
               v-model="firstRegistrationDate"
-              view="month"
-              dateFormat="mm.yy"
-              :yearNavigator="true"
+              dateFormat="dd.mm.yy"
               :maxDate="new Date()"
               :yearRange="`1900:${new Date().getFullYear()}`"
               :class="firstRegistrationDateError ? 'p-invalid' : ''"
@@ -83,9 +82,9 @@
 
         <div class="p-col-12">
           <h2 class="p-d-block p-text-center">{{ activeComponent && activeComponent.name }}</h2>
-          <DataTable :value="chosenQualitativeFaultsByComponent" class="datatable">
+          <DataTable :value="chosenQualitativeFaultsByComponent" v-show="qualitativeFaultsByComponent.length">
             <template #header>
-              <Dropdown v-model="form.qualitativeFault" :options="qualitativeFaultsByComponent" :filter="true" placeholder="Usterki jakościowe" :showClear="true" @change="handleQualitativeFaultChange">
+              <Dropdown v-model="form.qualitativeFault" :options="qualitativeFaultsByComponent" placeholder="Usterki jakościowe" :showClear="true" @change="handleQualitativeFaultChange">
                 <template #option="slotProps">
                   <div class="country-item">
                     <div>{{ slotProps.option.part }}</div>
@@ -116,9 +115,9 @@
             </Column>
           </DataTable>
 
-          <DataTable :value="chosenQuantitativeFaultsByComponent">
+          <DataTable :value="chosenQuantitativeFaultsByComponent" v-show="quantitativeFaultsByComponent.length">
             <template #header>
-              <Dropdown v-model="form.quantitativeFault" :options="quantitativeFaultsByComponent" :filter="true" placeholder="Usterki ilościowe" :showClear="true" @change="handleQuantitativeFaultChange">
+              <Dropdown v-model="form.quantitativeFault" :options="quantitativeFaultsByComponent" placeholder="Usterki ilościowe" :showClear="true" @change="handleQuantitativeFaultChange">
                 <template #option="slotProps">
                   <div class="country-item">
                     <div>{{ slotProps.option.part }}</div>
@@ -140,6 +139,7 @@
                       aria-describedby="faultValue-help"
                       class="p-d-block"
                       mode="decimal"
+                      locale="pl-PL"
                       :minFractionDigits="1"
                       :maxFractionDigits="2"
                       :class="faultValueClass(slotProps.data)"
@@ -158,7 +158,9 @@
           </DataTable>
         </div>
 
-        <Button :disabled="!meta.valid || !areAllComponentsFilled" label="Dodaj" type="submit" :icon="createInspectionLoading ? 'pi pi-spin pi-spinner' : 'pi pi-check'" iconPos="right" />
+        <div class="p-col-12 p-d-flex p-jc-end">
+          <Button :disabled="!meta.valid || !areAllComponentsFilled" label="Dodaj" type="submit" :icon="createInspectionLoading ? 'pi pi-spin pi-spinner' : 'pi pi-check'" iconPos="right" />
+        </div>
       </form>
     </template>
   </Card>
@@ -290,7 +292,7 @@ export default ({
       }
 
       if (condition) {
-        return `Prawidłowy przedział ${condition}`
+        return `Dopuszczalny przedział ${condition}`
       }
     }
 
