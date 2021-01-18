@@ -73,7 +73,7 @@ function useApollo () {
     return sortedCars
   })
 
-  const { result: allComponentsResult, loading: allComponentsLoading, error: allComponentsError, onError: onAllComponentsError } = useQuery(gql`
+  const { result: allComponentsResult, loading: allComponentsLoading, onError: onAllComponentsError } = useQuery(gql`
     query getAllComponents {
       getAllComponents {
         id

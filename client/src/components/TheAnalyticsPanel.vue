@@ -76,7 +76,7 @@
               <h3 class="stats-card-title">Rozkład uszkodzeń modułów</h3>
             </template>
             <template #content>
-              <Chart type="scatter" :data="data.faultsDistributionData" :options="data.faultsDistributionOptions" :width="450"/>
+              <Chart type="line" :data="data.faultsDistributionData" :options="data.faultsDistributionOptions" :width="450"/>
             </template>
           </Card>
         </div>
@@ -142,6 +142,10 @@ export default ({
     analyticsData: {
       type: Object,
       required: true
+    },
+    filtersData: {
+      type: Object,
+      default: () => ({})
     }
   },
   setup (props) {
@@ -193,25 +197,29 @@ export default ({
       },
       faultsDistributionData: {
         // labels: ['50 tyś km', '120 tyś km', '150 tyś km', '200 tyś km', '250 tyś km', '300 tyś km'],
-        datasets: [
-          {
-            label: 'SUV Audi',
-            data: [{ x: 30, y: 40 }, { x: 50, y: 80 }, { x: 70, y: 20 }, { x: 120, y: 0 }],
-            fill: false,
-            borderColor: '#66BB6A'
-          },
-          {
-            label: 'Coupe Mercedes',
-            data: [{ x: 30, y: 40 }, { x: 150, y: 80 }, { x: 151, y: 0 }, { x: 151, y: 0 }, { x: 152, y: 80 }, { x: 170, y: 20 }, { x: 220, y: 0 }],
-            fill: false,
-            borderColor: '#0080d4'
-          },
-          {
-            type: 'line',
-            data: [{ x: 30, y: 20 }, { x: 50, y: 80 }, { x: 70, y: 20 }, { x: 120, y: 0 }],
-            fill: false
-          }
-        ]
+        datasets: props.analyticsData?.faultsDistributionData2
+          ? [
+              {
+                label: 'Filtr 1',
+                data: props.analyticsData?.faultsDistributionData1,
+                fill: false,
+                borderColor: '#66BB6A'
+              },
+              {
+                label: 'Filtr 2',
+                data: props.analyticsData?.faultsDistributionData2,
+                fill: false,
+                borderColor: '#0080d4'
+              }
+            ]
+          : [
+              {
+                label: 'Filtr 1',
+                data: props.analyticsData?.faultsDistributionData1,
+                fill: false,
+                borderColor: '#66BB6A'
+              }
+            ]
       },
       faultsDistributionOptions: {
         // tooltips: {

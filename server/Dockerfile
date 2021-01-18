@@ -17,4 +17,4 @@ EXPOSE 3000
 #RUN npx prisma migrate --experimental up --auto-approve --create-db
 RUN npx prisma generate
 #RUN npm run generate
-CMD [ "npm", "run", "start:dev"]
+ENTRYPOINT [ "npm", "run", "start:dev"]

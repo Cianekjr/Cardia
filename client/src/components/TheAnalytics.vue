@@ -1,7 +1,7 @@
 <template>
   <div class="p-d-flex p-flex-column p-col-12">
     <TheAnalyticsFilters @updateFiltersData="updateFiltersData" :analyticsData="analyticsData"/>
-    <TheAnalyticsPanel :analyticsData="analyticsData"/>
+    <TheAnalyticsPanel :analyticsData="analyticsData" :filtersData="filtersData"/>
   </div>
 </template>
 

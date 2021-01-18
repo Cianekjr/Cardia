@@ -26,7 +26,9 @@
                 </div>
               </template>
             </CascadeSelect>
-            <small v-if="carIdError" id="car-help" class="p-invalid">{{ carIdError }}</small>
+            <small v-if="carIdError" id="car-help" class="p-invalid">
+              {{ carIdError }}
+            </small>
           </div>
         </div>
         <div class="p-field p-col-4 p-fluid">
@@ -43,7 +45,9 @@
             />
             <span class="p-inputgroup-addon">km</span>
           </div>
-          <small v-if="mileageError" id="mileage-help" class="p-invalid">{{ mileageError }}</small>
+          <small v-if="mileageError" id="mileage-help" class="p-invalid">
+            {{ mileageError }}
+          </small>
         </div>
         <div class="p-col-4">
           <div class="p-field p-mb-2 p-fluid">
@@ -59,7 +63,12 @@
               :showIcon="true"
               :manualInput="false"
             />
-            <small v-if="firstRegistrationDateError" id="firstRegistrationDate-help" class="p-invalid">{{ firstRegistrationDateError }}</small>
+            <small
+              v-if="firstRegistrationDateError"
+              id="firstRegistrationDate-help"
+              class="p-invalid">
+              {{ firstRegistrationDateError }}
+            </small>
           </div>
         </div>
         <Divider></Divider>
@@ -82,9 +91,18 @@
 
         <div class="p-col-12">
           <h2 class="p-d-block p-text-center">{{ activeComponent && activeComponent.name }}</h2>
-          <DataTable :value="chosenQualitativeFaultsByComponent" v-show="qualitativeFaultsByComponent.length">
+          <DataTable
+            :value="chosenQualitativeFaultsByComponent"
+            v-show="qualitativeFaultsByComponent.length"
+          >
             <template #header>
-              <Dropdown v-model="form.qualitativeFault" :options="qualitativeFaultsByComponent" placeholder="Usterki jakościowe" :showClear="true" @change="handleQualitativeFaultChange">
+              <Dropdown
+                v-model="form.qualitativeFault"
+                :options="qualitativeFaultsByComponent"
+                placeholder="Usterki jakościowe"
+                :showClear="true"
+                @change="handleQualitativeFaultChange"
+              >
                 <template #option="slotProps">
                   <div class="country-item">
                     <div>{{ slotProps.option.part }}</div>
@@ -110,14 +128,24 @@
             </Column>
             <Column>
               <template #body="slotProps">
-                <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="onQualitativeFaultRemove(slotProps.data.id)"/>
+                <Button
+                  icon="pi pi-trash"
+                  class="p-button-rounded p-button-danger"
+                  @click="onQualitativeFaultRemove(slotProps.data.id)"
+                />
               </template>
             </Column>
           </DataTable>
 
           <DataTable :value="chosenQuantitativeFaultsByComponent" v-show="quantitativeFaultsByComponent.length">
             <template #header>
-              <Dropdown v-model="form.quantitativeFault" :options="quantitativeFaultsByComponent" placeholder="Usterki ilościowe" :showClear="true" @change="handleQuantitativeFaultChange">
+              <Dropdown
+                v-model="form.quantitativeFault"
+                :options="quantitativeFaultsByComponent"
+                placeholder="Usterki ilościowe"
+                :showClear="true"
+                @change="handleQuantitativeFaultChange"
+              >
                 <template #option="slotProps">
                   <div class="country-item">
                     <div>{{ slotProps.option.part }}</div>
@@ -152,14 +180,23 @@
             </Column>
             <Column>
               <template #body="slotProps">
-                <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="onQuantitativeFaultRemove(slotProps.data.id)"/>
+                <Button
+                  icon="pi pi-trash"
+                  class="p-button-rounded p-button-danger"
+                  @click="onQuantitativeFaultRemove(slotProps.data.id)"
+                />
               </template>
             </Column>
           </DataTable>
         </div>
 
         <div class="p-col-12 p-d-flex p-jc-end">
-          <Button :disabled="!meta.valid || !areAllComponentsFilled" label="Dodaj" type="submit" :icon="createInspectionLoading ? 'pi pi-spin pi-spinner' : 'pi pi-check'" iconPos="right" />
+          <Button
+            :disabled="!meta.valid || !areAllComponentsFilled"
+            label="Dodaj"
+            type="submit"
+            :icon="createInspectionLoading ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+            iconPos="right" />
         </div>
       </form>
     </template>
@@ -350,12 +387,19 @@ export default ({
 
     const { value: carId, errorMessage: carIdError } = useField('carId', yup.number().required())
     const { value: mileage, errorMessage: mileageError } = useField('mileage', yup.mixed().required())
-    const { value: firstRegistrationDate, errorMessage: firstRegistrationDateError } = useField('firstRegistrationDate', yup.string().required())
+    const {
+      value: firstRegistrationDate,
+      errorMessage: firstRegistrationDateError
+    } = useField('firstRegistrationDate', yup.string().required())
 
     const onSubmit = handleSubmit(async (values) => {
       try {
-        const inspectionQualitativeFaults = chosenQualitativeFaults.value.map(fault => ({ qualitativeFaultId: fault.id, dangerLevel: fault.dangerLevel }))
-        const inspectionQuantitativeFaults = chosenQuantitativeFaults.value.map(fault => ({ quantitativeFaultId: fault.id, value: fault.value }))
+        const inspectionQualitativeFaults = chosenQualitativeFaults.value.map(fault => (
+          { qualitativeFaultId: fault.id, dangerLevel: fault.dangerLevel }
+        ))
+        const inspectionQuantitativeFaults = chosenQuantitativeFaults.value.map(fault => (
+          { quantitativeFaultId: fault.id, value: fault.value }
+        ))
 
         const { carId, mileage, firstRegistrationDate } = values
         const age = differenceInMonths(new Date(), firstRegistrationDate) + 1
@@ -461,5 +505,4 @@ export default ({
 .value-error :deep(.p-inputnumber-input) {
   color: red;
 }
-
 </style>

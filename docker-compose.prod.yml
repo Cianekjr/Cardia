@@ -1,0 +1,6 @@
+version: "3.6"
+services:
+  server:
+    entrypoint: "npm run start"
+  client:
+    entrypoint: "npm run serve"

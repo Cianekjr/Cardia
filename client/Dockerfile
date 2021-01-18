@@ -14,4 +14,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD [ "npm", "run", "serve"]
+ENTRYPOINT [ "npm", "run", "serve"]
