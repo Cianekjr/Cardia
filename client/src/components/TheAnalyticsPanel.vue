@@ -97,7 +97,7 @@
                   </div>
                 </div>
                 <div class="p-col-6" v-if="data.commonQualitativeFaults2">
-                  <div class="theme-second p-p-3'">
+                  <div class="theme-second p-p-3">
                     <div v-for="fault in data.commonQualitativeFaults2" :key="fault.id" class="p-mb-3">
                       <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
                       <p class="p-m-0">{{ fault.description}}</p>
