@@ -302,6 +302,11 @@ export default ({
 
     const isMileageFilter = computed(() => filterType.value === 'mileage')
 
+    watch(filterType, () => {
+      filterMin.value = undefined
+      filterMax.value = undefined
+    })
+
     const bodyTypesOptions = computed(() => {
       return filtersBodyTypes.value
     })
