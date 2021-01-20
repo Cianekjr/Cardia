@@ -262,7 +262,7 @@ export default ({
 
     const onSubmit = () => {
       const { filterType, filterMin, filterMax, ...data } = formData || {}
-      const normalizedData = { ...data }
+      const normalizedData = { ...data, filterType }
       if (filterType === 'mileage') {
         normalizedData.mileageMin = filterMin
         normalizedData.mileageMax = filterMax

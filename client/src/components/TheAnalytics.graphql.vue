@@ -33,14 +33,9 @@ function useApollo () {
           part
           description
         }
-        faultsDistributionData1 {
-          x
-          y
-        }
-        faultsDistributionData2 {
-          x
-          y
-        }
+        faultsDistributionLabels
+        faultsDistributionData1
+        faultsDistributionData2
       }
     }
   `)

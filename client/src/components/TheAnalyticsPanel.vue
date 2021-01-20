@@ -70,7 +70,7 @@
           </Card>
         </div>
 
-        <div class="p-col-12">
+        <div class="p-col-12" v-if="data.faultsDistributionLabels">
           <Card class="p-col-12 stats-card p-text-center">
             <template #title>
               <h3 class="stats-card-title">Rozkład uszkodzeń modułów</h3>
@@ -143,9 +143,8 @@ export default ({
       type: Object,
       required: true
     },
-    filtersData: {
-      type: Object,
-      default: () => ({})
+    filter: {
+      type: String
     }
   },
   setup (props) {
@@ -196,20 +195,22 @@ export default ({
         }
       },
       faultsDistributionData: {
-        // labels: ['50 tyś km', '120 tyś km', '150 tyś km', '200 tyś km', '250 tyś km', '300 tyś km'],
+        labels: props.analyticsData?.faultsDistributionLabels,
         datasets: props.analyticsData?.faultsDistributionData2
           ? [
               {
                 label: 'Filtr 1',
                 data: props.analyticsData?.faultsDistributionData1,
                 fill: false,
-                borderColor: '#66BB6A'
+                borderColor: '#66BB6A',
+                spanGaps: true
               },
               {
                 label: 'Filtr 2',
                 data: props.analyticsData?.faultsDistributionData2,
                 fill: false,
-                borderColor: '#0080d4'
+                borderColor: '#0080d4',
+                spanGaps: true
               }
             ]
           : [
@@ -217,17 +218,39 @@ export default ({
                 label: 'Filtr 1',
                 data: props.analyticsData?.faultsDistributionData1,
                 fill: false,
-                borderColor: '#66BB6A'
+                borderColor: '#66BB6A',
+                spanGaps: true
               }
             ]
       },
       faultsDistributionOptions: {
-        // tooltips: {
-        //   mode: 'index'
-        // },
+        tooltips: {
+          mode: 'index',
+          callbacks: {
+            label: function (tooltipItem, data) {
+              const unit = props.filter === 'mileage' ? '[tyś. km]' : '[miesiące]'
+              return `${data.labels[tooltipItem.index]} ${unit}: ${data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]}`
+            }
+          }
+        },
+        scales: {
+          yAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: 'Średnia liczba usterek'
+            }
+          }],
+          xAxes: [{
+            scaleLabel: {
+              display: true,
+              labelString: props.filter === 'mileage' ? 'Przebieg [tyś. km]' : 'Wiek pojazdu [miesiące]'
+            }
+          }]
+        }
       },
       commonQualitativeFaults1: props.analyticsData?.commonQualitativeFaults1,
-      commonQuantitativeFaults1: props.analyticsData?.commonQuantitativeFaults1
+      commonQuantitativeFaults1: props.analyticsData?.commonQuantitativeFaults1,
+      faultsDistributionLabels: props.analyticsData?.faultsDistributionLabels
     }))
 
     return {

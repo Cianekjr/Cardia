@@ -112,6 +112,7 @@ const resolvers = {
         componentsFaultsData2: null,
         commonQualitativeFaults1: null,
         commonQuantitativeFaults: null,
+        faultsDistributionLabels: null,
         faultsDistributionData1: null,
         faultsDistributionData2: null,
       }
@@ -226,29 +227,54 @@ const resolvers = {
       resultData.commonQuantitativeFaults1 = mostCommonQuantitativeFaults
 
       // LINE
-      const isAge = Number.isFinite(ageMin) || Number.isFinite(ageMax)
-      const faultsDistribution1 = inspections1.map(inspection => {
-        const qualitativeCount = inspection.inspectionQualitativeFaults.reduce((acc, item) => {
-          if (['SIGNIFICANT', 'MAJOR'].includes(item.dangerLevel)) {
-            return acc + 1
+      if ((Number.isFinite(ageMin) && Number.isFinite(ageMax)) || (Number.isFinite(mileageMin) && Number.isFinite(mileageMax))) {
+        const isAge = Number.isFinite(ageMin) || Number.isFinite(ageMax)
+        const min = isAge ? ageMin : Math.ceil(mileageMin / 1000)
+        const max = isAge ? ageMax : Math.ceil(mileageMax / 1000)
+        const rangeArray = Array(max - min + 1).fill().map((_, idx) => min + idx)
+        resultData.faultsDistributionLabels = rangeArray
+        const obj = {}
+        rangeArray.forEach(item => {
+          obj[item] = {
+            count: 0,
+            faults: 0
           }
-          return acc
-        }, 0)
-        const quantitativeCount = inspection.inspectionQuantitativeFaults.reduce((acc, item) => {
-          const minValueCondition = Number.isFinite(item.quantitativeFault.minValue) ? item.value >= item.quantitativeFault.minValue : true
-          const maxValueCondition = Number.isFinite(item.quantitativeFault.maxValue) ? item.value <= item.quantitativeFault.maxValue : true
-          if (!(minValueCondition && maxValueCondition)) {
-            return acc + 1
-          }
-          return acc
-        }, 0)
-        return {
-          x: isAge ? inspection.age : inspection.mileage,
-          y: qualitativeCount + quantitativeCount
-        }
-      })
+        })
 
-      resultData.faultsDistributionData1 = faultsDistribution1
+        inspections1.forEach(inspection => {
+          const qualitativeCount = inspection.inspectionQualitativeFaults.reduce((acc, item) => {
+            if (['SIGNIFICANT', 'MAJOR'].includes(item.dangerLevel)) {
+              return acc + 1
+            }
+            return acc
+          }, 0)
+          const quantitativeCount = inspection.inspectionQuantitativeFaults.reduce((acc, item) => {
+            const minValueCondition = Number.isFinite(item.quantitativeFault.minValue) ? item.value >= item.quantitativeFault.minValue : true
+            const maxValueCondition = Number.isFinite(item.quantitativeFault.maxValue) ? item.value <= item.quantitativeFault.maxValue : true
+            if (!(minValueCondition && maxValueCondition)) {
+              return acc + 1
+            }
+            return acc
+          }, 0)
+
+          const faultsCount = qualitativeCount + quantitativeCount
+          const filterCount = isAge ? inspection.age : Math.ceil(inspection.mileage / 1000)
+          if (obj[filterCount]) {
+            obj[filterCount].count++
+            obj[filterCount].faults += faultsCount
+          }
+        })
+
+        const faultsDistribution1 = Object.values(obj).map(item => {
+          if (item.count) {
+            return (item.faults / item.count).toFixed(2)
+          } else {
+            return undefined
+          }
+        })
+
+        resultData.faultsDistributionData1 = faultsDistribution1
+      }
 
       // FILTER 2
       if (makeId2 || bodyTypeId2 || modelId2 || engineTypeId2) {
@@ -277,6 +303,16 @@ const resolvers = {
                 engineType: true
               },
             },
+            inspectionQualitativeFaults: {
+              include: {
+                qualitativeFault: true
+              }
+            },
+            inspectionQuantitativeFaults: {
+              include: {
+                quantitativeFault: true,
+              }
+            }
           },
           where: inspections2Filters
         })
@@ -340,6 +376,53 @@ const resolvers = {
         resultData.componentsFaultsData2 = {
           keys: Object.keys(stackedComponentsFaults),
           values: Object.values(stackedComponentsFaults),
+        }
+
+        // LINE
+        if (resultData.faultsDistributionLabels) {
+          const isAge = Number.isFinite(ageMin) || Number.isFinite(ageMax)
+          const rangeArray = resultData.faultsDistributionLabels
+          const obj2 = {}
+          rangeArray.forEach(item => {
+            obj2[item] = {
+              count: 0,
+              faults: 0
+            }
+          })
+
+          inspections2.forEach(inspection => {
+            const qualitativeCount = inspection.inspectionQualitativeFaults?.reduce((acc, item) => {
+              if (['SIGNIFICANT', 'MAJOR'].includes(item.dangerLevel)) {
+                return acc + 1
+              }
+              return acc
+            }, 0)
+            const quantitativeCount = inspection.inspectionQuantitativeFaults?.reduce((acc, item) => {
+              const minValueCondition = Number.isFinite(item.quantitativeFault.minValue) ? item.value >= item.quantitativeFault.minValue : true
+              const maxValueCondition = Number.isFinite(item.quantitativeFault.maxValue) ? item.value <= item.quantitativeFault.maxValue : true
+              if (!(minValueCondition && maxValueCondition)) {
+                return acc + 1
+              }
+              return acc
+            }, 0)
+
+            const faultsCount = qualitativeCount + quantitativeCount
+            const filterCount = isAge ? inspection.age : Math.ceil(inspection.mileage / 1000)
+            if (obj2[filterCount]) {
+              obj2[filterCount].count++
+              obj2[filterCount].faults += faultsCount
+            }
+          })
+
+          const faultsDistribution2 = Object.values(obj2).map(item => {
+            if (item.count) {
+              return (item.faults / item.count).toFixed(2)
+            } else {
+              return undefined
+            }
+          })
+
+          resultData.faultsDistributionData2 = faultsDistribution2
         }
       }
 

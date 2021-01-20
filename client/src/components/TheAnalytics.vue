@@ -1,7 +1,7 @@
 <template>
   <div class="p-d-flex p-flex-column p-col-12">
     <TheAnalyticsFilters @updateFiltersData="updateFiltersData" :analyticsData="analyticsData"/>
-    <TheAnalyticsPanel :analyticsData="analyticsData" :filtersData="filtersData"/>
+    <TheAnalyticsPanel :analyticsData="analyticsData" :filter="filter"/>
   </div>
 </template>
 
@@ -17,11 +17,14 @@ export default ({
     TheAnalyticsFilters
   },
   setup () {
-    const { analyticsData, analyticsDataLoading, analyticsDataError, refetchAnalyticsData, onAnalyticsDataResult } = useApollo()
+    const { analyticsData, refetchAnalyticsData, onAnalyticsDataResult } = useApollo()
     const filtersData = ref({})
+    const filter = ref('mileage')
 
-    const updateFiltersData = data => {
+    const updateFiltersData = ({ filterType, ...data }) => {
       filtersData.value = { ...data }
+      filter.value = filterType
+      console.log('TLARLALRLARLAR', filterType, data)
     }
 
     watch(filtersData, () => {
@@ -30,7 +33,8 @@ export default ({
     return {
       updateFiltersData,
       onAnalyticsDataResult,
-      analyticsData
+      analyticsData,
+      filter
     }
   }
 })

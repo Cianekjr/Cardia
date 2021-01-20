@@ -1,7 +1,6 @@
 import { ApolloServer } from "apollo-server-express";
 import express from 'express';
 import session from 'express-session';
-// export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 import schema from './schema.js';
 import prisma from './context.js';
 

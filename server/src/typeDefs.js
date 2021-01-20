@@ -155,11 +155,6 @@ const typeDefs = gql`
     values: [Int!]!
   }
 
-	type Coords {
-		x: Int!
-		y: Int!
-	}
-
   type AnalyticsData {
     allInspectionsCount1: Int
     allInspectionsCount2: Int
@@ -173,8 +168,9 @@ const typeDefs = gql`
 		commonQuantitativeFaults1: [QuantitativeFault!]
 		commonQualitativeFaults2: [QualitativeFault!]
 		commonQuantitativeFaults2: [QuantitativeFault!]
-		faultsDistributionData1: [Coords!]
-		faultsDistributionData2: [Coords!]
+		faultsDistributionLabels: [Float]
+		faultsDistributionData1: [Float]
+		faultsDistributionData2: [Float]
   }
   
   input AnalyticsDataInput {
