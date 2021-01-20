@@ -33,6 +33,16 @@ function useApollo () {
           part
           description
         }
+        commonQualitativeFaults2 {
+          id
+          part
+          description
+        }
+        commonQuantitativeFaults2 {
+          id
+          part
+          description
+        }
         faultsDistributionLabels
         faultsDistributionData1
         faultsDistributionData2

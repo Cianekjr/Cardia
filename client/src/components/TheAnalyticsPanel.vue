@@ -88,16 +88,20 @@
             </template>
             <template #content>
               <div class="p-grid p-jc-around">
-                <div :class="data.commonQualitativeFaults2 ? 'theme-first p-p-3' : ''">
-                  <div v-for="fault in data.commonQualitativeFaults1" :key="fault.id" class="p-mb-3">
-                    <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
-                    <p class="p-m-0">{{ fault.description}}</p>
+                <div :class="data.commonQualitativeFaults2 ? 'p-col-6' : 'p-col-12'">
+                  <div :class="data.commonQualitativeFaults2 ? 'theme-first p-p-3' : ''">
+                    <div v-for="fault in data.commonQualitativeFaults1" :key="fault.id" class="p-mb-3">
+                      <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
+                      <p class="p-m-0">{{ fault.description}}</p>
+                    </div>
                   </div>
                 </div>
-                <div v-if="data.commonQualitativeFaults2" class="theme-second p-p-3'">
-                  <div v-for="fault in data.commonQualitativeFaults2" :key="fault.id" class="p-mb-3">
-                    <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
-                    <p class="p-m-0">{{ fault.description}}</p>
+                <div class="p-col-6" v-if="data.commonQualitativeFaults2">
+                  <div class="theme-second p-p-3'">
+                    <div v-for="fault in data.commonQualitativeFaults2" :key="fault.id" class="p-mb-3">
+                      <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
+                      <p class="p-m-0">{{ fault.description}}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -112,16 +116,20 @@
             </template>
             <template #content>
               <div class="p-grid p-jc-around">
-                <div :class="data.commonQuantitativeFaults2 ? 'theme-first p-p-3' : ''">
-                  <div v-for="fault in data.commonQuantitativeFaults1" :key="fault.id" class="p-mb-3">
-                    <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
-                    <p class="p-m-0">{{ fault.description }}</p>
+                <div :class="data.commonQuantitativeFaults2 ? 'p-col-6' : 'p-col-12'">
+                  <div :class="data.commonQuantitativeFaults2 ? 'theme-first p-p-3' : ''">
+                    <div v-for="fault in data.commonQuantitativeFaults1" :key="fault.id" class="p-mb-3">
+                      <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
+                      <p class="p-m-0">{{ fault.description }}</p>
+                    </div>
                   </div>
                 </div>
-                <div v-if="data.commonQuantitativeFaults2" class="theme-second p-p-3'">
-                  <div v-for="fault in data.commonQuantitativeFaults2" :key="fault.id" class="p-mb-3">
-                    <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
-                    <p class="p-m-0">{{ fault.description }}</p>
+                <div class="p-col-6" v-if="data.commonQuantitativeFaults2">
+                  <div class="theme-second p-p-3">
+                    <div v-for="fault in data.commonQuantitativeFaults2" :key="fault.id" class="p-mb-3">
+                      <h4 class="p-m-0 p-mb-1">{{ fault.part }}</h4>
+                      <p class="p-m-0">{{ fault.description }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -250,6 +258,8 @@ export default ({
       },
       commonQualitativeFaults1: props.analyticsData?.commonQualitativeFaults1,
       commonQuantitativeFaults1: props.analyticsData?.commonQuantitativeFaults1,
+      commonQualitativeFaults2: props.analyticsData?.commonQualitativeFaults2,
+      commonQuantitativeFaults2: props.analyticsData?.commonQuantitativeFaults2,
       faultsDistributionLabels: props.analyticsData?.faultsDistributionLabels
     }))
 

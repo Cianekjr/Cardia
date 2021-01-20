@@ -24,7 +24,6 @@ export default ({
     const updateFiltersData = ({ filterType, ...data }) => {
       filtersData.value = { ...data }
       filter.value = filterType
-      console.log('TLARLALRLARLAR', filterType, data)
     }
 
     watch(filtersData, () => {
