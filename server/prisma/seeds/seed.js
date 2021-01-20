@@ -12,7 +12,7 @@ faker.locale = "pl";
 
 const stationSeedCount = 55
 const carsSeedCount = 50
-const inspectionSeedCount = 3333
+const inspectionSeedCount = 1111
 
 const seed = async () => {
   await reset(prisma)
