@@ -236,7 +236,7 @@ export default ({
           mode: 'index',
           callbacks: {
             label: function (tooltipItem, data) {
-              const unit = props.filter === 'mileage' ? '[tyś. km]' : '[miesiące]'
+              const unit = props.filter === 'mileage' ? '[tys. km]' : '[miesiące]'
               return `${data.labels[tooltipItem.index]} ${unit}: ${data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]}`
             }
           }
@@ -251,7 +251,7 @@ export default ({
           xAxes: [{
             scaleLabel: {
               display: true,
-              labelString: props.filter === 'mileage' ? 'Przebieg [tyś. km]' : 'Wiek pojazdu [miesiące]'
+              labelString: props.filter === 'mileage' ? 'Przebieg [tys. km]' : 'Wiek pojazdu [miesiące]'
             }
           }]
         }
